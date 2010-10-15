@@ -1,33 +1,32 @@
 package chameleon.aspects;
 
+import java.util.Collections;
 import java.util.List;
-
-import org.rejuse.association.SingleAssociation;
 
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.validation.VerificationResult;
 
-public abstract class Advice<E extends Advice> extends NamespaceElementImpl<E, Element> { 
+public class Advice<E extends Advice> extends NamespaceElementImpl<E, Element> {
+	
+	public Advice() {
+		
+	}
+	
 	public Advice(Aspect aspect) {
 		setAspect(aspect);
 	}
 	
 	public void setAspect(Aspect other) {
 		if (other != null)
-			_aspect.connectTo(other.pointcutLink());
-		else
-			_aspect.connectTo(null);
+			parentLink().connectTo(other.adviceLink());
 	}
-	
-	private SingleAssociation<Advice, Aspect> _aspect = new SingleAssociation(this);
-	
 	/**
 	 * 	Get the Aspect this Advice belongs to
 	 */
 	public Aspect aspect() {
-		return _aspect.getOtherEnd();
+		return (Aspect) parentLink().getOtherEnd();
 	}
 	
 	private Pointcut pointcut;
@@ -41,12 +40,16 @@ public abstract class Advice<E extends Advice> extends NamespaceElementImpl<E, E
 	
 	/**
 	 * 	Set the pointcut that this Advice applies to
-	 * @throws LookupException TODO
 	 */
-	public void setPointcut(Pointcut pointcut) throws LookupException {
-		if (pointcut == null ||
-			!pointcut.aspect().sameAs(aspect()))
-			throw new IllegalArgumentException();
+	public void setPointcut(Pointcut pointcut)  {
+		try {
+			if (pointcut == null ||
+				!pointcut.aspect().sameAs(aspect()))
+				throw new IllegalArgumentException();
+		} catch (LookupException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		this.pointcut = pointcut;
 	}
@@ -58,5 +61,24 @@ public abstract class Advice<E extends Advice> extends NamespaceElementImpl<E, E
 	 */
 	public Element body() {
 		return body;
+	}
+
+	@Override
+	public List<? extends Element> children() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public E clone() {
+		Advice clone = new Advice();
+		clone.setPointcut(pointcut().clone());
+		
+		return (E) clone;
+	}
+
+	@Override
+	public VerificationResult verifySelf() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,5 +1,6 @@
 package chameleon.aspects;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.rejuse.association.MultiAssociation;
@@ -37,14 +38,26 @@ public class Aspect<E extends Aspect> extends NamespaceElementImpl<E, Element> {
 
 	@Override
 	public List<? extends Element> children() {
-		// TODO Auto-generated method stub
-		return null;
+		List<Element> children = new ArrayList<Element>();
+		children.addAll(pointcuts());
+		children.addAll(advices());
+		return children;
 	}
 
-	@Override
 	public E clone() {
-		// TODO Auto-generated method stub
-		return null;
+		Aspect clone = new Aspect();
+		
+		for (Pointcut pc : pointcuts()) {
+			Pointcut pcClone = pc.clone();
+			pcClone.setAspect(clone);
+		}
+		
+		for (Advice ac : advices()) {
+			Advice adviceClone = ac.clone();
+			adviceClone.setAspect(clone);
+		}
+		
+		return (E) clone;
 	}
 
 	@Override

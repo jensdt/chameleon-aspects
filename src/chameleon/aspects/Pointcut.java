@@ -1,9 +1,17 @@
 package chameleon.aspects;
 
-import org.rejuse.association.SingleAssociation;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.rejuse.association.SingleAssociation;
+import org.rejuse.predicate.UnsafePredicate;
+
+import chameleon.core.declaration.Declaration;
 import chameleon.core.element.Element;
+import chameleon.core.lookup.LookupException;
+import chameleon.core.method.MethodHeader;
 import chameleon.core.namespace.NamespaceElementImpl;
+import chameleon.core.reference.CrossReference;
 
 /**
  *
@@ -15,30 +23,33 @@ import chameleon.core.namespace.NamespaceElementImpl;
  *
  */
 public abstract class Pointcut<E extends Pointcut> extends NamespaceElementImpl<E, Element> {
+	
+	public Pointcut() {
+		
+	}
+	
 	public Pointcut(Aspect aspect) {
 		setAspect(aspect);
 	}
 	
 	public Pointcut(Aspect aspect, String name) {
 		this(aspect);
-		this.name = name;
+		setName(name);
 	}
-	
-	private SingleAssociation<Pointcut, Aspect> _aspect = new SingleAssociation(this);
 	
 	public void setAspect(Aspect other) {
 		if (other != null)
-			_aspect.connectTo(other.pointcutLink());
-		else
-			_aspect.connectTo(null);
+			parentLink().connectTo(other.pointcutLink());
 	}
 	
 	/**
 	 * 	Get the Aspect that this Pointcut belongs to
 	 */
 	public Aspect aspect() {
-		return _aspect.getOtherEnd();
+		return (Aspect) parentLink().getOtherEnd();
 	}
+	
+	public abstract List<? extends Element> joinpoints() throws LookupException;
 	
 	/**
 	 * 	The name of the pointcut, so several advices may reference it without having to copy/paste the pointcut definition.
@@ -53,4 +64,10 @@ public abstract class Pointcut<E extends Pointcut> extends NamespaceElementImpl<
 	public String name() {
 		return name;
 	}
+	
+	protected void setName(String name) {
+		this.name = name;
+	}
+	
+	public abstract E clone();
 }
