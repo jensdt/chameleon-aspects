@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.rejuse.association.SingleAssociation;
 
+import chameleon.aspects.pointcut.Pointcut;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
