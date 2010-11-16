@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.rejuse.association.MultiAssociation;
 
+import chameleon.aspects.advice.Advice;
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.declaration.DeclarationContainer;

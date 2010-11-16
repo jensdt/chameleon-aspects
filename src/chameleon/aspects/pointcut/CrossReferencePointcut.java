@@ -27,17 +27,14 @@ public class CrossReferencePointcut<E extends CrossReferencePointcut<E>> extends
 		super();
 	}
 	
-	public CrossReferencePointcut(String name) {
-		super(new SimpleNameSignature(name));
+	public CrossReferencePointcut(PointcutHeader header) {
+		super(header);
 	}
 	
-	public CrossReferencePointcut(String name, PointcutExpression expression) {
-		super(new SimpleNameSignature(name), expression);
+	public CrossReferencePointcut(PointcutHeader header, PointcutExpression expression) {
+		super(header, expression);
 	}
 	
-	public CrossReferencePointcut(String name, PointcutExpression expression, List<FormalParameter> parameters) {
-		super(new SimpleNameSignature(name), expression, parameters);
-	}
 	
 	@Override
 	public List<? extends CrossReference> joinpoints() throws LookupException {
@@ -78,7 +75,7 @@ public class CrossReferencePointcut<E extends CrossReferencePointcut<E>> extends
 	@Override
 	public E clone() {
 		CrossReferencePointcut clone = new CrossReferencePointcut();
-		clone.setName(signature().name());
+		clone.setSignature(signature().clone());
 		clone.setExpression(expression().clone());
 		
 		return (E) clone;

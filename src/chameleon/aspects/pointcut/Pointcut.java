@@ -3,22 +3,23 @@ package chameleon.aspects.pointcut;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.rejuse.association.MultiAssociation;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.Aspect;
 import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.declaration.Declaration;
+import chameleon.core.declaration.DeclarationContainer;
 import chameleon.core.declaration.Signature;
-import chameleon.core.declaration.SimpleNameSignature;
 import chameleon.core.element.Element;
+import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
+import chameleon.core.scope.Scope;
 import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
-import chameleon.core.variable.FormalParameter;
 import chameleon.exception.ChameleonProgrammerException;
+import chameleon.exception.ModelException;
 import chameleon.util.Util;
 
 /**
@@ -30,27 +31,20 @@ import chameleon.util.Util;
  * 	@author Jens De Temmerman
  *
  */
-public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E, Element> implements Declaration<E, Element, SimpleNameSignature, Declaration> {
+public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E, Element> implements Declaration<E, Element, PointcutSignature, Declaration>, DeclarationContainer<E,Element> {
 	
 	public Pointcut() {
 		
 	}
 	
-	public Pointcut(SimpleNameSignature signature) {
-		setSignature(signature);
+	public Pointcut(PointcutHeader header) {
+		setHeader(header);
 	}
-	
-	public Pointcut(SimpleNameSignature signature, PointcutExpression expression) {
-		this(signature);
+
+	public Pointcut(PointcutHeader header, PointcutExpression expression) {
+		this(header);
 		setExpression(expression);
 	}
-	
-	public Pointcut(SimpleNameSignature signature, PointcutExpression expression, List<FormalParameter> formalParameters) {
-		this(signature, expression);
-		addFormalParameter(formalParameters);
-	}
-	
-
 
 	/**
 	 * 	Get the Aspect that this Pointcut belongs to
@@ -60,41 +54,26 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 		
 	}
 	
-	 private MultiAssociation<Pointcut<E>, FormalParameter> _formalParameters = new MultiAssociation<Pointcut<E>, FormalParameter>(this);
-	 
-	private void addFormalParameter(List<FormalParameter> formalParameters) {
-		if (formalParameters == null)
-			return;
-		
-		for (FormalParameter par : formalParameters)
-			addFormalParameter(par);
+	private SingleAssociation<Pointcut<E>, PointcutHeader> _header = new SingleAssociation<Pointcut<E>, PointcutHeader>(this);
+	
+	public PointcutHeader header() {
+		return _header.getOtherEnd();
+	}
+	
+	private void setHeader(PointcutHeader header) {
+		setAsParent(_header, header);
 	}
 
-	private void addFormalParameter(FormalParameter par) {
-		setAsParent(_formalParameters, par);
-	}
-	
-	public List<FormalParameter> formalParameters() {
-		return _formalParameters.getOtherEnds();
-	}
-	
-	 private SingleAssociation<Pointcut<E>, SimpleNameSignature> _signature = new SingleAssociation<Pointcut<E>, SimpleNameSignature>(this);
-	
-	@Override
-	public SimpleNameSignature signature() {
-		return _signature.getOtherEnd();
-	}
-
-	@Override
-	public void setSignature(Signature signature) {
-	  	if(signature instanceof SimpleNameSignature) {
-	  		_signature.connectTo(signature.parentLink());
-	  	} else if(signature == null) {
-	  		_signature.connectTo(null);
-	  	} else {
-	  		throw new ChameleonProgrammerException("Setting wrong type of signature. Provided: "+(signature == null ? null :signature.getClass().getName())+" Expected SimpleNameSignature");
-	  	}
-	}
+//	@Override
+//	public void setSignature(Signature signature) {
+//	  	if(signature instanceof PointcutSignature) {
+//	  		_signature.connectTo(signature.parentLink());
+//	  	} else if(signature == null) {
+//	  		_signature.connectTo(null);
+//	  	} else {
+//	  		throw new ChameleonProgrammerException("Setting wrong type of signature. Provided: "+(signature == null ? null :signature.getClass().getName())+" Expected PointcutSignature");
+//	  	}
+//	}
 	
 	private SingleAssociation<Pointcut, PointcutExpression> _expression = new SingleAssociation<Pointcut, PointcutExpression>(this);
 	
@@ -107,11 +86,7 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 	}
 	
 	public abstract List<? extends Element> joinpoints() throws LookupException;
-	
-	public void setName(String name) {
-		setSignature(new SimpleNameSignature(name));
-	}
-	
+		
 	public abstract E clone();
 	
 	@Override
@@ -128,8 +103,8 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 	public List<? extends Element> children() {
 		List<Element> children = new ArrayList<Element>();
 		
+		Util.addNonNull(header(), children);
 		Util.addNonNull(expression(), children);
-		children.addAll(formalParameters());
 		
 		return children;
 	}
@@ -149,5 +124,43 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 	@Override
 	public Declaration declarator() {
 		return this;
+	}
+
+	@Override
+	public PointcutSignature signature() {
+		return header().signature();
+	}
+
+	@Override
+	public void setSignature(Signature signature) {
+		header().createFromSignature(signature);
+	}
+
+	@Override
+	public void setName(String name) {
+		header().setName(name);
+	}
+
+	@Override
+	public Scope scope() throws ModelException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<? extends Declaration> declarations() throws LookupException {
+		return header().declarations();
+	}
+
+	@Override
+	public List<? extends Declaration> locallyDeclaredDeclarations()
+			throws LookupException {
+		return declarations();
+	}
+
+	@Override
+	public <D extends Declaration> List<D> declarations(
+			DeclarationSelector<D> selector) throws LookupException {
+		return header().declarations(selector);
 	}
 }
