@@ -4,18 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import chameleon.core.declaration.Declaration;
-import chameleon.core.declaration.DeclarationContainer;
-import chameleon.core.declaration.Signature;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
-import chameleon.core.lookup.TwoPhaseDeclarationSelector;
+import chameleon.core.lookup.SimpleNameCrossReferenceWithArgumentsSelector;
 import chameleon.core.reference.CrossReference;
 import chameleon.core.reference.CrossReferenceWithArguments;
-import chameleon.core.relation.WeakPartialOrder;
 import chameleon.oo.type.Type;
-import chameleon.support.member.MoreSpecificTypesOrder;
-import chameleon.support.member.simplename.method.NormalMethod;
 import chameleon.util.Util;
 
 public class PointcutReference<E extends PointcutReference<E>> extends CrossReferenceWithArguments<E> implements CrossReference<E, Element, Pointcut>{
@@ -61,54 +56,19 @@ public class PointcutReference<E extends PointcutReference<E>> extends CrossRefe
 		return (E) clone;
 	}
 	
-	  public abstract class SimpleNamePointcutSelector extends TwoPhaseDeclarationSelector<Pointcut> {
-		  	
-//	  	private int _nameHash = SimpleNameMethodInvocation.this._methodName.hashCode();
-	    
+	public abstract class SimpleNamePointcutSelector extends SimpleNameCrossReferenceWithArgumentsSelector<Pointcut> {
 	  	@Override
-	    public boolean selectedRegardlessOfName(Pointcut declaration) throws LookupException {
-	  		boolean result = false;
-	  		
-			Signature signature = declaration.signature();
-			if (signature instanceof PointcutSignature) {
-				PointcutSignature sig = (PointcutSignature) signature;
-				if (sig.nbFormalParameters() == nbActualParameters()) {
-					result = true;
-//					List<Type> actuals = getActualParameterTypes();
-//					List<Type> formals = sig.parameterTypes();
-//					result = MoreSpecificTypesOrder.create().contains(actuals,
-//							formals);
-				} else {
-					result = false;
-				}
-			}
-			return result;
-		}
+	  	public int nbActualParameters() {
+	  		return PointcutReference.this.nbActualParameters();
+	  	}
 	  	
 	  	@Override
-	  	public String selectionName(DeclarationContainer container) {
-	  		return name();
+	  	public List<Type> getActualParameterTypes() throws LookupException {
+	  		return PointcutReference.this.getActualParameterTypes();
 	  	}
-	    
-	  	@Override
-	    public boolean selectedBasedOnName(Signature signature) throws LookupException {
-	  		boolean result = false;
-	  		if(signature instanceof PointcutSignature) {
-	  			PointcutSignature sig = (PointcutSignature)signature;
-	  			result = sig.name().equals(name()); // (_nameHash == sig.nameHash()) && 
-	  		}
-	  		return result;
-	    }
-
-	    @Override
-	    public WeakPartialOrder<Pointcut> order() {
-	      return new WeakPartialOrder<Pointcut>() {
-	        @Override
-	        public boolean contains(Pointcut first, Pointcut second)
-	            throws LookupException {
-	          return MoreSpecificTypesOrder.create().contains(((PointcutHeader) first.header()).formalParameterTypes(), ((PointcutHeader) second.header()).formalParameterTypes());
-	        }
-	      };
-	    }
-	  }
+	  	
+	  	public String name() {
+	  		return PointcutReference.this.name();
+	  	}
+	}
 }

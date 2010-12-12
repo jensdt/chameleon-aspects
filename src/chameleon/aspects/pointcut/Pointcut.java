@@ -9,7 +9,10 @@ import chameleon.aspects.Aspect;
 import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.declaration.DeclarationContainer;
+import chameleon.core.declaration.DeclarationWithHeader;
 import chameleon.core.declaration.Signature;
+import chameleon.core.declaration.SimpleNameDeclarationWithParametersHeader;
+import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
@@ -18,7 +21,6 @@ import chameleon.core.scope.Scope;
 import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
-import chameleon.exception.ChameleonProgrammerException;
 import chameleon.exception.ModelException;
 import chameleon.util.Util;
 
@@ -31,17 +33,17 @@ import chameleon.util.Util;
  * 	@author Jens De Temmerman
  *
  */
-public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E, Element> implements Declaration<E, Element, PointcutSignature, Declaration>, DeclarationContainer<E,Element> {
+public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E, Element> implements DeclarationContainer<E,Element>, DeclarationWithHeader<E, Element, SimpleNameDeclarationWithParametersSignature, Declaration, SimpleNameDeclarationWithParametersHeader> {
 	
 	public Pointcut() {
 		
 	}
 	
-	public Pointcut(PointcutHeader header) {
+	public Pointcut(SimpleNameDeclarationWithParametersHeader header) {
 		setHeader(header);
 	}
 
-	public Pointcut(PointcutHeader header, PointcutExpression expression) {
+	public Pointcut(SimpleNameDeclarationWithParametersHeader header, PointcutExpression expression) {
 		this(header);
 		setExpression(expression);
 	}
@@ -50,17 +52,17 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 	 * 	Get the Aspect that this Pointcut belongs to
 	 */
 	public Aspect aspect() {
-		return (Aspect) parentLink().getOtherEnd();
+		return (Aspect) parent();
 		
 	}
 	
-	private SingleAssociation<Pointcut<E>, PointcutHeader> _header = new SingleAssociation<Pointcut<E>, PointcutHeader>(this);
+	private SingleAssociation<Pointcut<E>, SimpleNameDeclarationWithParametersHeader> _header = new SingleAssociation<Pointcut<E>, SimpleNameDeclarationWithParametersHeader>(this);
 	
-	public PointcutHeader header() {
+	public SimpleNameDeclarationWithParametersHeader header() {
 		return _header.getOtherEnd();
 	}
 	
-	private void setHeader(PointcutHeader header) {
+	private void setHeader(SimpleNameDeclarationWithParametersHeader header) {
 		setAsParent(_header, header);
 	}
 
@@ -127,7 +129,7 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 	}
 
 	@Override
-	public PointcutSignature signature() {
+	public SimpleNameDeclarationWithParametersSignature signature() {
 		return header().signature();
 	}
 
