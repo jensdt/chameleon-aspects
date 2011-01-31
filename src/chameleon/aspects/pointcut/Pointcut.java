@@ -62,7 +62,7 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 		return _header.getOtherEnd();
 	}
 	
-	private void setHeader(SimpleNameDeclarationWithParametersHeader header) {
+	protected void setHeader(SimpleNameDeclarationWithParametersHeader header) {
 		setAsParent(_header, header);
 	}
 

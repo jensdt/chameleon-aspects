@@ -5,12 +5,15 @@ import java.util.List;
 
 import chameleon.core.declaration.Declaration;
 import chameleon.core.element.Element;
+import chameleon.core.expression.Expression;
+import chameleon.core.expression.InvocationTarget;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.lookup.SimpleNameCrossReferenceWithArgumentsSelector;
 import chameleon.core.reference.CrossReference;
 import chameleon.core.reference.CrossReferenceWithArguments;
 import chameleon.oo.type.Type;
+import chameleon.oo.type.generics.ActualTypeArgument;
 import chameleon.util.Util;
 
 public class PointcutReference<E extends PointcutReference<E>> extends CrossReferenceWithArguments<E> implements CrossReference<E, Element, Pointcut>{
@@ -50,10 +53,22 @@ public class PointcutReference<E extends PointcutReference<E>> extends CrossRefe
 	}
 	
 	public E clone() {
-		PointcutReference<E> clone = super.clone();
-		clone.setName(name());
+		InvocationTarget target = null;
+		if (getTarget() != null) {
+			target = getTarget().clone();
+		}
+		final E result = (E) new PointcutReference<E>();
+		result.setTarget(target);
+		for (Expression element : getActualParameters()) {
+			result.addArgument(element.clone());
+		}
+		for (ActualTypeArgument arg : typeArguments()) {
+			result.addArgument(arg.clone());
+		}
 		
-		return (E) clone;
+		result.setName(name());
+		
+		return result;
 	}
 	
 	public abstract class SimpleNamePointcutSelector extends SimpleNameCrossReferenceWithArgumentsSelector<Pointcut> {

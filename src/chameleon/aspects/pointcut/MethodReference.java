@@ -12,6 +12,7 @@ import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.oo.type.TypeReference;
+import chameleon.util.Util;
 
 /**
  * 	Represents a reference to a method, used in a pointcut description. References to methods are always fully qualified and
@@ -22,7 +23,7 @@ import chameleon.oo.type.TypeReference;
  */
 public class MethodReference<E extends MethodReference<E>> extends NamespaceElementImpl<E, Element> {
 	
-	public MethodReference(TypeReference type, QualifiedMethodHeader fqn) {
+	public MethodReference(String type, QualifiedMethodHeader fqn) {
 		setType(type);
 		setFqn(fqn);
 	}
@@ -30,14 +31,18 @@ public class MethodReference<E extends MethodReference<E>> extends NamespaceElem
 	/**
 	 *	Return type of the method 	
 	 */
-	private SingleAssociation<MethodReference<E>, TypeReference> _type = new SingleAssociation<MethodReference<E>, TypeReference>(this);
+	private String type;
 	
-	private void setType(TypeReference type) {
-		setAsParent(_type, type);
+	private void setType(String type) {
+		this.type = type;
 	}
 	
-	private TypeReference type() {
-		return _type.getOtherEnd();
+	public String type() {
+		return type;
+	}
+	
+	public String getFullyQualifiedName() {
+		return fqn().getFullyQualifiedName();
 	}
 
 	/**
@@ -57,22 +62,21 @@ public class MethodReference<E extends MethodReference<E>> extends NamespaceElem
 	 * 	Return the signature of this method
 	 */
 	public Signature signature() {
-		return fqn().signature(); // TODO: this is used to select the joinpoints, need to figure this out with packages etc
+		return fqn().methodHeader().signature(); // TODO: this is used to select the joinpoints, need to figure this out with packages etc
 	}
 
 
 	@Override
 	public List<? extends Element> children() {
 		List<Element> result = new ArrayList<Element>();
-		result.add(type());
-		result.add(fqn());
+		Util.addNonNull(fqn(), result);
 		
 		return result;
 	}
 
 	@Override
 	public E clone() {
-		return (E) new MethodReference<E>(type().clone(), (QualifiedMethodHeader) fqn().clone());
+		return (E) new MethodReference<E>(type(), (QualifiedMethodHeader) fqn().clone());
 	}
 
 	@Override

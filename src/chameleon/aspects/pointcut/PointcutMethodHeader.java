@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.rejuse.association.MultiAssociation;
 
+import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.validation.Valid;
@@ -16,6 +17,10 @@ public class PointcutMethodHeader<E extends PointcutMethodHeader<E>> extends Nam
 	private String name;
 	private MultiAssociation<PointcutMethodHeader<E>, TypeReference> _formalParameterTypes = new MultiAssociation<PointcutMethodHeader<E>, TypeReference>(this);
 
+	public PointcutMethodHeader(String name) {
+		setName(name);
+	}
+	
 	public PointcutMethodHeader(String name, List<TypeReference> formalParameterTypes) {
 		setName(name);
 		addFormalParameterType(formalParameterTypes);
@@ -51,11 +56,20 @@ public class PointcutMethodHeader<E extends PointcutMethodHeader<E>> extends Nam
 		result.addAll(formalParameterTypes());
 		return result;
 	}
+	
+	public SimpleNameDeclarationWithParametersSignature signature() {
+		return new SimpleNameDeclarationWithParametersSignature(name());
+	}
 
 	@Override
 	public E clone() {
-		// TODO Auto-generated method stub
-		return null;
+		PointcutMethodHeader<E> clone = new PointcutMethodHeader<E>(name());
+		
+		for (TypeReference fpt : formalParameterTypes())
+			clone.addFormalParameterType(fpt.clone());
+		
+		
+		return (E) clone;
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import java.util.List;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.core.declaration.QualifiedName;
-import chameleon.core.declaration.Signature;
+import chameleon.core.declaration.SimpleNameSignature;
 import chameleon.core.element.Element;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.validation.Valid;
@@ -34,8 +34,19 @@ public class QualifiedMethodHeader<E extends QualifiedMethodHeader<E>> extends N
 		setAsParent(_methodHeader, header);
 	}
 	
-	public Signature signature() {
-		return null; // TODO
+	public String getFullyQualifiedName() {
+		StringBuilder fqn = new StringBuilder();
+		
+		for (Object o : prefixes().signatures()) {
+			SimpleNameSignature s = (SimpleNameSignature) o;
+			fqn.append(s.name());
+			fqn.append(".");
+		}
+		
+		if (fqn.length() > 0) // Trim the trailing dot
+			fqn.setLength(fqn.length()-1);
+		
+		return fqn.toString();
 	}
 	
 	public QualifiedName prefixes() {

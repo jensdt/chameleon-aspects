@@ -21,8 +21,9 @@ import chameleon.core.scope.Scope;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.exception.ModelException;
+import chameleon.oo.type.AspectOrType;
 
-public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E,Element> implements DeclarationContainer<E, Element>, Declaration<E, Element,  SimpleNameSignature, Declaration>{
+public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E,Element> implements AspectOrType<E, Declaration>, DeclarationContainer<E, Element>, Declaration<E, Element,  SimpleNameSignature, Declaration>{
 	
 	private String name;
 	
@@ -161,6 +162,11 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E,Element>
 	public Scope scope() throws ModelException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String getName() {
+		return name();
 	}
 	
 	

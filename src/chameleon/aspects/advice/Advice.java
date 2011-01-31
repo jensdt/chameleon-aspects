@@ -1,7 +1,10 @@
 package chameleon.aspects.advice;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import org.rejuse.association.OrderedMultiAssociation;
 import org.rejuse.association.SingleAssociation;
@@ -20,18 +23,44 @@ import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.core.variable.FormalParameter;
 import chameleon.core.variable.VariableContainer;
+import chameleon.oo.type.TypeReference;
 import chameleon.util.Util;
 
 public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element> implements VariableContainer<E, Element> {
 
-	public Advice() {
+	public Advice(AdviceType type, TypeReference returnType) {
+		generateName();
+		setReturnType(returnType);
+		setType(type);
+	}
+	
+	private static Set<String> nameRegistry = new HashSet<String>();
+	
+	/**
+	 * 	Generates a random name for this aspect. (26^8 possibilities so collisions shouldn't slow this down)
+	 */
+	private void generateName() {
+		String alphabet = "abcdefghijklmopqrstuvwxyz";
+		Random r = new Random();
 		
+		StringBuilder name;
+		do {
+			name = new StringBuilder();
+			for (int i = 0; i < 8; i++)
+				name.append(alphabet.charAt(r.nextInt(alphabet.length())));
+		} while (nameRegistry.contains(name));
+		
+		nameRegistry.add(name.toString());
+		setName(name.toString());
 	}
 
-	
+
+	private String name;
+	private AdviceType type;
 	private OrderedMultiAssociation<Advice<E>, FormalParameter> _parameters = new OrderedMultiAssociation<Advice<E>, FormalParameter>(this);
 	private SingleAssociation<Advice<E>, Element> _body = new SingleAssociation<Advice<E>, Element>(this);
 	private SingleAssociation<Advice<E>, PointcutReference> _pointcutReference = new SingleAssociation<Advice<E>, PointcutReference>(this);
+	private SingleAssociation<Advice<E>, TypeReference> _returnType = new SingleAssociation<Advice<E>, TypeReference>(this);
 	
 	public Element body() {
 		return _body.getOtherEnd();
@@ -91,8 +120,6 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element
 		return (Aspect) parentLink().getOtherEnd();
 	}
 	
-	private Pointcut pointcut;
-	
 	/**
 	 * 	Get the pointcut that this Advice applies to
 	 */
@@ -122,6 +149,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element
 		
 		Util.addNonNull(body(), result);
 		Util.addNonNull(pointcutReference(), result);
+		Util.addNonNull(returnType(), result);
 		result.addAll(formalParameters());
 		
 		return result;
@@ -129,7 +157,9 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element
 
 	@Override
 	public E clone() {
-		Advice clone = new Advice();
+		Advice clone = new Advice(type(), returnType().clone());
+		nameRegistry.remove(clone.name()); // clone will have registered a new name, don't need that
+		clone.setName(name); // Clones should have the same name!
 		clone.setPointcutReference(pointcutReference().clone());
 		clone.setBody(body().clone());
 		
@@ -167,5 +197,29 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element
 	public NamespaceElement variableScopeElement() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public String name() {
+		return name;
+	}
+
+	protected void setName(String name) {
+		this.name = name;
+	}
+
+	public AdviceType type() {
+		return type;
+	}
+
+	public void setType(AdviceType type) {
+		this.type = type;
+	}
+	
+	public TypeReference returnType() {
+		return _returnType.getOtherEnd();
+	}
+	
+	public void setReturnType(TypeReference returnType) {
+		setAsParent(_returnType, returnType);
 	}
 }

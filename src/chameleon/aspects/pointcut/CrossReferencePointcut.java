@@ -65,6 +65,7 @@ public class CrossReferencePointcut<E extends CrossReferencePointcut<E>> extends
 	@Override
 	public E clone() {
 		CrossReferencePointcut clone = new CrossReferencePointcut();
+		clone.setHeader(header().cloneThis());
 		clone.setSignature(signature().clone());
 		clone.setExpression(expression().clone());
 		
