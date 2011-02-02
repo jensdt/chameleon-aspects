@@ -23,7 +23,7 @@ import chameleon.core.validation.VerificationResult;
 import chameleon.exception.ModelException;
 import chameleon.oo.type.AspectOrType;
 
-public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E,Element> implements AspectOrType<E, Declaration>, DeclarationContainer<E, Element>, Declaration<E, Element,  SimpleNameSignature, Declaration>{
+public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> implements AspectOrType<E, Declaration>, DeclarationContainer<E>, Declaration<E,  SimpleNameSignature, Declaration>{
 	
 	private String name;
 	
@@ -140,7 +140,7 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E,Element>
 	}
 
 	@Override
-	public Declaration<?, ?, ?, Declaration> selectionDeclaration()
+	public Declaration<?, ?, Declaration> selectionDeclaration()
 			throws LookupException {
 		// TODO Auto-generated method stub
 		return null;

@@ -8,7 +8,7 @@ import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 
-public abstract class PointcutExpression<E extends PointcutExpression<E>> extends NamespaceElementImpl<E, Element> {
+public abstract class PointcutExpression<E extends PointcutExpression<E>> extends NamespaceElementImpl<E> {
 	/**
 	 * 	Check if this pointcut expression matches the given joinpoint. Note: null (as a pointcutexpression) always matches.
 	 * 

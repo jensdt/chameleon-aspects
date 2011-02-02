@@ -21,7 +21,7 @@ import chameleon.util.Util;
  * 	@author jensdt
  *
  */
-public class MethodReference<E extends MethodReference<E>> extends NamespaceElementImpl<E, Element> {
+public class MethodReference<E extends MethodReference<E>> extends NamespaceElementImpl<E> {
 	
 	public MethodReference(String type, QualifiedMethodHeader fqn) {
 		setType(type);

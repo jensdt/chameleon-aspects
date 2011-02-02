@@ -26,7 +26,7 @@ import chameleon.core.variable.VariableContainer;
 import chameleon.oo.type.TypeReference;
 import chameleon.util.Util;
 
-public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element> implements VariableContainer<E, Element> {
+public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> implements VariableContainer<E> {
 
 	public Advice(AdviceType type, TypeReference returnType) {
 		generateName();

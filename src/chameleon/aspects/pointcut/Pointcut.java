@@ -33,7 +33,7 @@ import chameleon.util.Util;
  * 	@author Jens De Temmerman
  *
  */
-public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E, Element> implements DeclarationContainer<E,Element>, DeclarationWithHeader<E, Element, SimpleNameDeclarationWithParametersSignature, Declaration, SimpleNameDeclarationWithParametersHeader> {
+public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, DeclarationWithHeader<E, SimpleNameDeclarationWithParametersSignature, Declaration, SimpleNameDeclarationWithParametersHeader> {
 	
 	public Pointcut() {
 		
@@ -112,7 +112,7 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 	}
 	
 	@Override
-	public Declaration<?, ?, ?, Declaration> selectionDeclaration()
+	public Declaration<?, ?, Declaration> selectionDeclaration()
 			throws LookupException {
 		return this;
 	}

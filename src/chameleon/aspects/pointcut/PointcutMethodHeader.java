@@ -12,7 +12,7 @@ import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.oo.type.TypeReference;
 
-public class PointcutMethodHeader<E extends PointcutMethodHeader<E>> extends NamespaceElementImpl<E, Element> {
+public class PointcutMethodHeader<E extends PointcutMethodHeader<E>> extends NamespaceElementImpl<E> {
 	
 	private String name;
 	private MultiAssociation<PointcutMethodHeader<E>, TypeReference> _formalParameterTypes = new MultiAssociation<PointcutMethodHeader<E>, TypeReference>(this);

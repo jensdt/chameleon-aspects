@@ -16,7 +16,7 @@ import chameleon.oo.type.Type;
 import chameleon.oo.type.generics.ActualTypeArgument;
 import chameleon.util.Util;
 
-public class PointcutReference<E extends PointcutReference<E>> extends CrossReferenceWithArguments<E> implements CrossReference<E, Element, Pointcut>{
+public class PointcutReference<E extends PointcutReference<E>> extends CrossReferenceWithArguments<E> implements CrossReference<E, Pointcut>{
 	
 	private String _pointcutName;
 

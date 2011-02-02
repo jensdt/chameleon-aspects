@@ -13,7 +13,7 @@ import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.util.Util;
 
-public class QualifiedMethodHeader<E extends QualifiedMethodHeader<E>> extends NamespaceElementImpl<E, Element> {
+public class QualifiedMethodHeader<E extends QualifiedMethodHeader<E>> extends NamespaceElementImpl<E> {
 	
 	private SingleAssociation<QualifiedMethodHeader, QualifiedName> _prefixes = new SingleAssociation<QualifiedMethodHeader, QualifiedName>(this);
 	private SingleAssociation<QualifiedMethodHeader, PointcutMethodHeader> _methodHeader = new SingleAssociation<QualifiedMethodHeader, PointcutMethodHeader>(this);
