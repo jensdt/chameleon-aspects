@@ -1,6 +1,7 @@
 package chameleon.aspects.pointcut.expression;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.rejuse.association.SingleAssociation;
@@ -10,8 +11,9 @@ import chameleon.core.element.Element;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.method.Method;
-import chameleon.core.reference.CrossReference;
+import chameleon.core.variable.FormalParameter;
 import chameleon.oo.type.Type;
+import chameleon.oo.type.TypeReference;
 
 public class CrossReferencePointcutExpression<E extends CrossReferencePointcutExpression<E>> extends PointcutExpression<E> {
 	private SingleAssociation<CrossReferencePointcutExpression, MethodReference> _methodReference = new SingleAssociation<CrossReferencePointcutExpression, MethodReference>(this);
@@ -45,11 +47,29 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 			return false;
 		
 		// Check if the FQN matches
-		
 		String jpFqn = ((Type) e.nearestAncestor(Type.class)).getFullyQualifiedName();
 		String definedFqn = methodReference().getFullyQualifiedName();
 
-		return sameFQNWithWildcard(jpFqn, definedFqn);
+		if (!sameFQNWithWildcard(jpFqn, definedFqn))
+			return false;
+		
+		// Check if the parameters match
+		Iterator<FormalParameter> methodArguments = e.formalParameters().iterator();
+		Iterator<TypeReference> argumentTypes = methodReference().fqn().methodHeader().formalParameterTypes().iterator();
+	
+		
+		while (methodArguments.hasNext() && argumentTypes.hasNext()) {
+			argumentTypes.next();
+			methodArguments.next();
+			/*if (!argumentTypes.next().getType().assignableTo(methodArguments.next().getType()))
+				return false;*/
+		}
+		
+		// If this is true, it means there is a difference in the number of args
+		if (methodArguments.hasNext() || argumentTypes.hasNext())
+			return false;
+		
+		return true;
 	}
 	
 	/**

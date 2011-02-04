@@ -54,7 +54,7 @@ public class MethodReference<E extends MethodReference<E>> extends NamespaceElem
 		setAsParent(_fqn, fqn);
 	}
 
-	private QualifiedMethodHeader fqn() {
+	public QualifiedMethodHeader fqn() {
 		return _fqn.getOtherEnd();
 	}
 

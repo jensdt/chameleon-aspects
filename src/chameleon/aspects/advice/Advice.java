@@ -19,10 +19,12 @@ import chameleon.core.lookup.LookupException;
 import chameleon.core.lookup.LookupStrategy;
 import chameleon.core.namespace.NamespaceElement;
 import chameleon.core.namespace.NamespaceElementImpl;
+import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.core.variable.FormalParameter;
 import chameleon.core.variable.VariableContainer;
+import chameleon.oo.type.BasicTypeReference;
 import chameleon.oo.type.TypeReference;
 import chameleon.util.Util;
 
@@ -30,8 +32,12 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element
 
 	public Advice(AdviceType type, TypeReference returnType) {
 		generateName();
-		setReturnType(returnType);
 		setType(type);
+
+		if (returnType == null)
+			setReturnType(new BasicTypeReference("void"));
+		else
+			setReturnType(returnType);
 	}
 	
 	private static Set<String> nameRegistry = new HashSet<String>();
@@ -172,7 +178,17 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E, Element
 	@Override
 	public VerificationResult verifySelf() {
 		VerificationResult result = Valid.create();
+		
+		try {
+			if (!returnType().getType().getFullyQualifiedName().equals("void") && type() != AdviceType.AROUND)
+				result = result.and(new BasicProblem(this, "No return type allowed for " + type() + " advice"));
+				
 			
+		} catch (LookupException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		return result;
 	}
 
