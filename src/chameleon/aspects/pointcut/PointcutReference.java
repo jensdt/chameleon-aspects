@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import chameleon.core.declaration.Declaration;
+import chameleon.core.declaration.Signature;
+import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
 import chameleon.core.expression.InvocationTarget;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
+import chameleon.core.lookup.LookupStrategy;
 import chameleon.core.lookup.SimpleNameCrossReferenceWithArgumentsSelector;
+import chameleon.core.member.MoreSpecificTypesOrder;
 import chameleon.core.reference.CrossReference;
 import chameleon.core.reference.CrossReferenceWithArguments;
 import chameleon.oo.type.Type;
@@ -41,6 +45,21 @@ public class PointcutReference<E extends PointcutReference<E>> extends CrossRefe
 		return result;
 	}
 	
+	@Override
+	public LookupStrategy lexicalLookupStrategy(Element element)
+			throws LookupException {
+		if (getElement() != null)
+			return getElement().header().lexicalLookupStrategy(element);
+		else
+			return super.lexicalLookupStrategy(element);
+		
+	}
+
+	
+	private LookupStrategy _local;
+
+	private LookupStrategy _lexical;
+	
 	public DeclarationSelector<Declaration> selector() throws LookupException {
 		DeclarationSelector d = new SimpleNamePointcutSelector() {
 			 @Override
@@ -71,7 +90,7 @@ public class PointcutReference<E extends PointcutReference<E>> extends CrossRefe
 		return result;
 	}
 	
-	public abstract class SimpleNamePointcutSelector extends SimpleNameCrossReferenceWithArgumentsSelector<Pointcut> {
+	public abstract class SimpleNamePointcutSelector<D extends Pointcut> extends SimpleNameCrossReferenceWithArgumentsSelector<D> {
 	  	@Override
 	  	public int nbActualParameters() {
 	  		return PointcutReference.this.nbActualParameters();
@@ -85,5 +104,11 @@ public class PointcutReference<E extends PointcutReference<E>> extends CrossRefe
 	  	public String name() {
 	  		return PointcutReference.this.name();
 	  	}
+	  	
+		@Override
+		public boolean selectedRegardlessOfName(D declaration)
+				throws LookupException {
+			return true;
+		}
 	}
 }

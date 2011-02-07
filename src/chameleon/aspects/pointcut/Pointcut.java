@@ -16,6 +16,7 @@ import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
+import chameleon.core.lookup.LookupStrategy;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.scope.Scope;
 import chameleon.core.validation.BasicProblem;
@@ -65,7 +66,7 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 	protected void setHeader(SimpleNameDeclarationWithParametersHeader header) {
 		setAsParent(_header, header);
 	}
-
+	
 //	@Override
 //	public void setSignature(Signature signature) {
 //	  	if(signature instanceof PointcutSignature) {
