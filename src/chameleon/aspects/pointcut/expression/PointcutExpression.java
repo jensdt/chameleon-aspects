@@ -7,6 +7,7 @@ import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
+import chameleon.core.variable.FormalParameter;
 
 public abstract class PointcutExpression<E extends PointcutExpression<E>> extends NamespaceElementImpl<E> {
 	/**
@@ -25,4 +26,8 @@ public abstract class PointcutExpression<E extends PointcutExpression<E>> extend
 	}
 	
 	public abstract E clone();
+
+	public boolean hasParameter(FormalParameter fp) {
+		return false; // TODO: make this abstract and add sufficient implementation
+	}
 }

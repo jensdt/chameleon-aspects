@@ -6,6 +6,7 @@ import java.util.List;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.core.declaration.QualifiedName;
+import chameleon.core.declaration.SimpleNameDeclarationWithParametersHeader;
 import chameleon.core.declaration.SimpleNameSignature;
 import chameleon.core.element.Element;
 import chameleon.core.namespace.NamespaceElementImpl;
@@ -16,21 +17,21 @@ import chameleon.util.Util;
 public class QualifiedMethodHeader<E extends QualifiedMethodHeader<E>> extends NamespaceElementImpl<E> {
 	
 	private SingleAssociation<QualifiedMethodHeader, QualifiedName> _prefixes = new SingleAssociation<QualifiedMethodHeader, QualifiedName>(this);
-	private SingleAssociation<QualifiedMethodHeader, PointcutMethodHeader> _methodHeader = new SingleAssociation<QualifiedMethodHeader, PointcutMethodHeader>(this);
+	private SingleAssociation<QualifiedMethodHeader, SimpleNameDeclarationWithParametersHeader> _methodHeader = new SingleAssociation<QualifiedMethodHeader, SimpleNameDeclarationWithParametersHeader>(this);
 	
 	public QualifiedMethodHeader() {
 		super();
 	}
 	
-	public QualifiedMethodHeader(PointcutMethodHeader header) {
+	public QualifiedMethodHeader(SimpleNameDeclarationWithParametersHeader header) {
 		setMethodheader(header);
 	}
 	
-	public PointcutMethodHeader methodHeader() {
+	public SimpleNameDeclarationWithParametersHeader methodHeader() {
 		return _methodHeader.getOtherEnd();
 	}
 	
-	public void setMethodheader(PointcutMethodHeader header) {
+	public void setMethodheader(SimpleNameDeclarationWithParametersHeader header) {
 		setAsParent(_methodHeader, header);
 	}
 	
@@ -75,8 +76,11 @@ public class QualifiedMethodHeader<E extends QualifiedMethodHeader<E>> extends N
 
 	@Override
 	public E clone() {
-		// TODO Auto-generated method stub
-		return null;
+		QualifiedMethodHeader result = new QualifiedMethodHeader();
+		result.setPrefixes(prefixes().clone());
+		result.setMethodheader((SimpleNameDeclarationWithParametersHeader) methodHeader().clone());
+		
+		return (E) result;
 	}
 
 

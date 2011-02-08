@@ -1,6 +1,7 @@
 package chameleon.aspects.pointcut;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.rejuse.association.SingleAssociation;
@@ -16,12 +17,12 @@ import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
-import chameleon.core.lookup.LookupStrategy;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.scope.Scope;
 import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
+import chameleon.core.variable.FormalParameter;
 import chameleon.exception.ModelException;
 import chameleon.util.Util;
 
@@ -92,12 +93,37 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 		
 	public abstract E clone();
 	
+	private List<FormalParameter> unresolvedParameters() {
+		List<FormalParameter> unresolved = new ArrayList<FormalParameter>();
+		
+		for (FormalParameter fp : (List<FormalParameter>) header().formalParameters())
+			if (!expression().hasParameter(fp))
+				unresolved.add(fp);
+		
+		return unresolved;
+	}
+	
 	@Override
 	public VerificationResult verifySelf() {
 		VerificationResult result = Valid.create();
 		
 		if (aspect() == null)
-			result.and(new BasicProblem(this, "Pointcuts must be defined within aspects."));
+			result = result.and(new BasicProblem(this, "Pointcuts must be defined within aspects."));
+		
+		List<FormalParameter> unresolved = unresolvedParameters();
+		if (!unresolved.isEmpty()) {
+			
+			StringBuffer unresolvedList = new StringBuffer();
+			Iterator<FormalParameter> it = unresolved.iterator();
+			unresolvedList.append(it.next().getName());
+			
+			while (it.hasNext()) {
+				unresolvedList.append(", ");
+				unresolvedList.append(it.next().getName());
+			}
+			
+			result = result.and(new BasicProblem(this, "The following parameters cannot be resolved: " + unresolvedList));
+		}
 		
 		return result;
 	}
@@ -136,7 +162,7 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 
 	@Override
 	public void setSignature(Signature signature) {
-		header().createFromSignature(signature);
+		setHeader(header().createFromSignature(signature));
 	}
 
 	@Override

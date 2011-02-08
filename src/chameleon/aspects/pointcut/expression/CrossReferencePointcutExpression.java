@@ -14,6 +14,7 @@ import chameleon.core.method.Method;
 import chameleon.core.variable.FormalParameter;
 import chameleon.oo.type.Type;
 import chameleon.oo.type.TypeReference;
+import chameleon.util.Util;
 
 public class CrossReferencePointcutExpression<E extends CrossReferencePointcutExpression<E>> extends PointcutExpression<E> {
 	private SingleAssociation<CrossReferencePointcutExpression, MethodReference> _methodReference = new SingleAssociation<CrossReferencePointcutExpression, MethodReference>(this);
@@ -55,14 +56,15 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 		
 		// Check if the parameters match
 		Iterator<FormalParameter> methodArguments = e.formalParameters().iterator();
-		Iterator<TypeReference> argumentTypes = methodReference().fqn().methodHeader().formalParameterTypes().iterator();
+		Iterator<Type> argumentTypes = methodReference().fqn().methodHeader().formalParameterTypes().iterator();
 	
 		
 		while (methodArguments.hasNext() && argumentTypes.hasNext()) {
-			argumentTypes.next();
-			methodArguments.next();
-			/*if (!argumentTypes.next().getType().assignableTo(methodArguments.next().getType()))
-				return false;*/
+			Type argType = argumentTypes.next();
+			FormalParameter methodArg = methodArguments.next();
+			if (!argType.signature().name().equals(methodArg.getType().signature().name()))
+					
+				return false;
 		}
 		
 		// If this is true, it means there is a difference in the number of args
@@ -120,8 +122,7 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 	public List<? extends Element> children() {
 		List<Element> result = new ArrayList<Element>();
 		
-		if (methodReference() != null)
-			result.add(methodReference());
+		Util.addNonNull(methodReference(), result);
 		
 		return result;
 	}
@@ -129,6 +130,25 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 	@Override
 	public E clone() {
 		return (E) new CrossReferencePointcutExpression<E>(methodReference().clone()); 
+	}
+	
+	@Override
+	public boolean hasParameter(FormalParameter fp) {
+		List<FormalParameter> methodParameters = methodReference().fqn().methodHeader().formalParameters();
+		
+		for (FormalParameter formalParameter : methodParameters) {
+			try {
+				if (fp.getName().equals(formalParameter.getName())
+					&& (formalParameter.getType().sameAs(fp.getType())
+						|| formalParameter.getType().subTypeOf(fp.getType())))
+						return true;
+			} catch (LookupException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return false;
 	}
 	
 }
