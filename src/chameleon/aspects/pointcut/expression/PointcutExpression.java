@@ -1,7 +1,7 @@
 package chameleon.aspects.pointcut.expression;
 
-import java.util.List;
-
+import chameleon.aspects.pointcut.MatchResult;
+import chameleon.aspects.pointcut.Pointcut;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
@@ -15,14 +15,17 @@ public abstract class PointcutExpression<E extends PointcutExpression<E>> extend
 	 * 
 	 * 	@param joinpoint
 	 * 			The joinpoint to check
-	 * 	@return True if the pointcut expression matches the joinpoint, false otherwise
 	 * @throws LookupException 
 	 */
-	public abstract boolean matches(Element joinpoint) throws LookupException;
+	public abstract MatchResult matches(Element joinpoint) throws LookupException;
 
 	@Override
 	public VerificationResult verifySelf() {
 		return Valid.create();
+	}
+	
+	public Pointcut pointcut() {
+		return nearestAncestor(Pointcut.class);
 	}
 	
 	public abstract E clone();

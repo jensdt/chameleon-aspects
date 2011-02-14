@@ -1,5 +1,6 @@
 package chameleon.aspects.pointcut.expression;
 
+import chameleon.aspects.pointcut.MatchResult;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 
@@ -10,9 +11,8 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E>> extends Poi
 	}
 
 	@Override
-	public boolean matches(Element joinpoint) throws LookupException {
-		return (expression1() == null || expression1().matches(joinpoint))
-			|| (expression2() == null || expression2().matches(joinpoint));
+	public MatchResult matches(Element joinpoint) throws LookupException {
+		throw new RuntimeException();
 	}
 
 	@Override

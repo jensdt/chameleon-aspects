@@ -2,6 +2,7 @@ package chameleon.aspects.advice;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -140,7 +141,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 		}
 	}
 
-	private PointcutReference pointcutReference() {
+	public PointcutReference pointcutReference() {
 		return _pointcutReference.getOtherEnd();
 	}
 
@@ -174,6 +175,16 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 		
 		return (E) clone;
 	}
+	
+	private List<FormalParameter> unresolvedParameters() {
+		List<FormalParameter> unresolved = new ArrayList<FormalParameter>();
+		
+		for (FormalParameter fp : (List<FormalParameter>) formalParameters())
+			if (!pointcutReference().hasParameter(fp))
+				unresolved.add(fp);
+		
+		return unresolved;
+	}
 
 	@Override
 	public VerificationResult verifySelf() {
@@ -187,6 +198,21 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 		} catch (LookupException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+		List<FormalParameter> unresolved = unresolvedParameters();
+		if (!unresolved.isEmpty()) {
+			
+			StringBuffer unresolvedList = new StringBuffer();
+			Iterator<FormalParameter> it = unresolved.iterator();
+			unresolvedList.append(it.next().getName());
+			
+			while (it.hasNext()) {
+				unresolvedList.append(", ");
+				unresolvedList.append(it.next().getName());
+			}
+			
+			result = result.and(new BasicProblem(this, "The following parameters cannot be resolved: " + unresolvedList));
 		}
 		
 		return result;

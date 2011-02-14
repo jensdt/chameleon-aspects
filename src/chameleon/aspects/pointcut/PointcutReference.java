@@ -21,9 +21,11 @@ import chameleon.core.lookup.TwoPhaseDeclarationSelector;
 import chameleon.core.member.MoreSpecificTypesOrder;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.reference.CrossReference;
+import chameleon.core.reference.CrossReferenceWithArguments;
 import chameleon.core.relation.WeakPartialOrder;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
+import chameleon.core.variable.FormalParameter;
 
 public class PointcutReference<E extends PointcutReference<E>> extends
 		NamespaceElementImpl<E> implements CrossReference<E, Pointcut> {
@@ -70,6 +72,7 @@ public class PointcutReference<E extends PointcutReference<E>> extends
 		@Override
 		public boolean selectedRegardlessOfName(D declaration)
 				throws LookupException {
+			System.out.println(declaration.header().formalParameters().size());
 			return true;
 		}
 
@@ -210,4 +213,21 @@ public class PointcutReference<E extends PointcutReference<E>> extends
 		for (PointcutExpressionParameter param : arguments)
 			addParameter(param);
 	}
+
+	public boolean hasParameter(FormalParameter fp) {
+		return indexOfParameter(fp) != -1;
+	}
+	
+	public int indexOfParameter(FormalParameter fp) {
+		int index = 0;
+		for (PointcutExpressionParameter param : parameters()) {
+			if (param.name().equals(fp.getName()))
+				return index;
+			
+			index++;
+		}
+		
+		return -1;
+	}
+	
 }

@@ -28,17 +28,18 @@ public class CrossReferencePointcut<E extends CrossReferencePointcut<E>> extends
 	
 	@Override
 	public List<? extends CrossReference> joinpoints() throws LookupException {
-		return language().defaultNamespace().descendants(CrossReference.class,
-				new UnsafePredicate<CrossReference, LookupException>() {
-
-					@Override
-					public boolean eval(final CrossReference cr) throws LookupException {
-						return expression() == null || expression().matches(cr);
-					}
-
-				}
-
-		);
+		throw new RuntimeException();
+//		return language().defaultNamespace().descendants(CrossReference.class,
+//				new UnsafePredicate<CrossReference, LookupException>() {
+//
+//					@Override
+//					public boolean eval(final CrossReference cr) throws LookupException {
+//						return expression() == null || expression().matches(cr);
+//					}
+//
+//				}
+//
+//		);
 //		return language().defaultNamespace().descendants(CrossReference.class, 
 //				new UnsafePredicate<CrossReference, LookupException>() {
 //

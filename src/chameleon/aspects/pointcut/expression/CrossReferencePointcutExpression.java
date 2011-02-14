@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.rejuse.association.SingleAssociation;
 
+import chameleon.aspects.pointcut.MatchResult;
 import chameleon.aspects.pointcut.MethodReference;
 import chameleon.core.element.Element;
 import chameleon.core.expression.MethodInvocation;
@@ -32,27 +33,27 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 	}
 
 	@Override
-	public boolean matches(Element joinpoint) throws LookupException {
+	public MatchResult matches(Element joinpoint) throws LookupException {
 		if (!(joinpoint instanceof MethodInvocation))
-			return false;
+			return MatchResult.noMatch();
 		
 		Method e = ((MethodInvocation) joinpoint).getElement();
 		
 		// Check if the type matches
 		if (!sameAsWithWildcard(e.returnTypeReference().getType().signature().name(), methodReference().type()))
-			return false;
+			return MatchResult.noMatch();
 				
 		
 		// Check if the signature matches
 		if (!sameAsWithWildcard(e.signature().name(), methodReference().signature().name()))
-			return false;
+			return MatchResult.noMatch();
 		
 		// Check if the FQN matches
 		String jpFqn = ((Type) e.nearestAncestor(Type.class)).getFullyQualifiedName();
 		String definedFqn = methodReference().getFullyQualifiedName();
 
 		if (!sameFQNWithWildcard(jpFqn, definedFqn))
-			return false;
+			return MatchResult.noMatch();
 		
 		// Check if the parameters match
 		Iterator<FormalParameter> methodArguments = e.formalParameters().iterator();
@@ -64,14 +65,14 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 			FormalParameter methodArg = methodArguments.next();
 			if (!argType.signature().name().equals(methodArg.getType().signature().name()))
 					
-				return false;
+				return MatchResult.noMatch();
 		}
 		
 		// If this is true, it means there is a difference in the number of args
 		if (methodArguments.hasNext() || argumentTypes.hasNext())
-			return false;
+			return MatchResult.noMatch();
 		
-		return true;
+		return new MatchResult<CrossReferencePointcutExpression>(this);
 	}
 	
 	/**
@@ -134,21 +135,29 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 	
 	@Override
 	public boolean hasParameter(FormalParameter fp) {
+		// Used indexOf to avoid code duplication
+		return indexOfParameter(fp) != -1;
+	}
+	
+	public int indexOfParameter(FormalParameter fp) {
 		List<FormalParameter> methodParameters = methodReference().fqn().methodHeader().formalParameters();
 		
+		int index = 0;
 		for (FormalParameter formalParameter : methodParameters) {
 			try {
 				if (fp.getName().equals(formalParameter.getName())
 					&& (formalParameter.getType().sameAs(fp.getType())
 						|| formalParameter.getType().subTypeOf(fp.getType())))
-						return true;
+						return index;
 			} catch (LookupException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			index++;
 		}
 		
-		return false;
+		return -1;
 	}
 	
 }
