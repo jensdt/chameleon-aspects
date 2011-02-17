@@ -8,6 +8,7 @@ import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.Aspect;
 import chameleon.aspects.pointcut.expression.PointcutExpression;
+import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.declaration.DeclarationContainer;
 import chameleon.core.declaration.DeclarationWithHeader;
@@ -89,7 +90,7 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 		setAsParent(_expression, expression);
 	}
 	
-	public abstract List<? extends Element> joinpoints() throws LookupException;
+	public abstract List<MatchResult> joinpoints(CompilationUnit compilationUnit) throws LookupException;
 		
 	public abstract E clone();
 	

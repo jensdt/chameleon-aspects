@@ -47,18 +47,24 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 	 * 	Generates a random name for this aspect. (26^8 possibilities so collisions shouldn't slow this down)
 	 */
 	private void generateName() {
-		String alphabet = "abcdefghijklmopqrstuvwxyz";
-		Random r = new Random();
+		String name;
 		
-		StringBuilder name;
 		do {
-			name = new StringBuilder();
-			for (int i = 0; i < 8; i++)
-				name.append(alphabet.charAt(r.nextInt(alphabet.length())));
+			name = getRandomName();
 		} while (nameRegistry.contains(name));
 		
-		nameRegistry.add(name.toString());
-		setName(name.toString());
+		nameRegistry.add(name);
+		setName(name);
+	}
+	
+	private Random r = new Random();
+	private String alphabet = "abcdefghijklmopqrstuvwxyz";
+	private String getRandomName() {
+		StringBuilder name = new StringBuilder();
+		for (int i = 0; i < 8; i++)
+			name.append(alphabet.charAt(r.nextInt(alphabet.length())));
+		
+		return name.toString();
 	}
 
 
@@ -185,7 +191,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 		
 		return unresolved;
 	}
-
+	
 	@Override
 	public VerificationResult verifySelf() {
 		VerificationResult result = Valid.create();

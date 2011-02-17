@@ -72,7 +72,7 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 		if (methodArguments.hasNext() || argumentTypes.hasNext())
 			return MatchResult.noMatch();
 		
-		return new MatchResult<CrossReferencePointcutExpression>(this);
+		return new MatchResult<CrossReferencePointcutExpression, MethodInvocation>(this, (MethodInvocation) joinpoint);
 	}
 	
 	/**
