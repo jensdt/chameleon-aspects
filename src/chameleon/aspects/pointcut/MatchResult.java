@@ -1,9 +1,9 @@
 package chameleon.aspects.pointcut;
 
-import chameleon.aspects.pointcut.expression.CrossReferencePointcutExpression;
+import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.reference.CrossReference;
 
-public class MatchResult<T extends CrossReferencePointcutExpression, U extends CrossReference> {
+public class MatchResult<T extends PointcutExpression, U extends CrossReference> {
 	private boolean match;
 	private U joinpoint;
 	private T expression;
@@ -18,7 +18,7 @@ public class MatchResult<T extends CrossReferencePointcutExpression, U extends C
 		setMatch(match);
 	}
 	
-	public static <T extends CrossReferencePointcutExpression, U extends CrossReference> MatchResult<T, U> noMatch() {
+	public static <T extends PointcutExpression, U extends CrossReference> MatchResult<T, U> noMatch() {
 		return new MatchResult<T, U>(false, null, null);
 	}
 

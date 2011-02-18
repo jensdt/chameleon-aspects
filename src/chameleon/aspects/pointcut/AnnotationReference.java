@@ -10,18 +10,18 @@ import chameleon.core.validation.VerificationResult;
 
 public class AnnotationReference<E extends AnnotationReference<E>> extends NamespaceElementImpl<E> {
 	
-	private String reference;
+	private String referencedName;
 	
 	public AnnotationReference(String reference) {
-		setReference(reference);
+		setReferencendName(reference);
 	}
 	
-	public String reference() {
-		return reference;
+	public String referencendName() {
+		return referencedName;
 	}
 
-	private void setReference(String reference) {
-		this.reference = reference;
+	private void setReferencendName(String reference) {
+		this.referencedName = reference;
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class AnnotationReference<E extends AnnotationReference<E>> extends Names
 
 	@Override
 	public E clone() {
-		return (E) new AnnotationReference(reference());
+		return (E) new AnnotationReference(referencendName());
 	}
 
 	@Override
