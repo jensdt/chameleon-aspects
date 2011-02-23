@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression;
+package chameleon.aspects.pointcut.expression.methodinvocation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,21 +6,19 @@ import java.util.List;
 
 import org.rejuse.association.SingleAssociation;
 
-import chameleon.aspects.pointcut.MatchResult;
-import chameleon.aspects.pointcut.MethodReference;
+import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.method.Method;
 import chameleon.core.variable.FormalParameter;
 import chameleon.oo.type.Type;
-import chameleon.oo.type.TypeReference;
 import chameleon.util.Util;
 
-public class CrossReferencePointcutExpression<E extends CrossReferencePointcutExpression<E>> extends PointcutExpression<E> {
-	private SingleAssociation<CrossReferencePointcutExpression, MethodReference> _methodReference = new SingleAssociation<CrossReferencePointcutExpression, MethodReference>(this);
+public class SignatureMethodInvocationPointcutExpression<E extends SignatureMethodInvocationPointcutExpression<E, T>, T extends MethodInvocation> extends MethodInvocationPointcutExpression<E, T> {
+	private SingleAssociation<SignatureMethodInvocationPointcutExpression, MethodReference> _methodReference = new SingleAssociation<SignatureMethodInvocationPointcutExpression, MethodReference>(this);
 	
-	public CrossReferencePointcutExpression(MethodReference methodReference) {
+	public SignatureMethodInvocationPointcutExpression(MethodReference methodReference) {
 		setMethodReference(methodReference);
 	}
 
@@ -33,11 +31,8 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 	}
 
 	@Override
-	public MatchResult matches(Element joinpoint) throws LookupException {
-		if (!(joinpoint instanceof MethodInvocation))
-			return MatchResult.noMatch();
-		
-		Method e = ((MethodInvocation) joinpoint).getElement();
+	public MatchResult matches(T joinpoint) throws LookupException {
+		Method e = joinpoint.getElement();
 		
 		// Check if the type matches
 		if (!sameAsWithWildcard(e.returnTypeReference().getType().signature().name(), methodReference().type()))
@@ -72,7 +67,7 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 		if (methodArguments.hasNext() || argumentTypes.hasNext())
 			return MatchResult.noMatch();
 		
-		return new MatchResult<CrossReferencePointcutExpression, MethodInvocation>(this, (MethodInvocation) joinpoint);
+		return new MatchResult<SignatureMethodInvocationPointcutExpression, MethodInvocation>(this, (MethodInvocation) joinpoint);
 	}
 	
 	/**
@@ -130,7 +125,7 @@ public class CrossReferencePointcutExpression<E extends CrossReferencePointcutEx
 
 	@Override
 	public E clone() {
-		return (E) new CrossReferencePointcutExpression<E>(methodReference().clone()); 
+		return (E) new SignatureMethodInvocationPointcutExpression<E, T>(methodReference().clone()); 
 	}
 	
 	@Override

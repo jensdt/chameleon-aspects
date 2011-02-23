@@ -1,7 +1,8 @@
-package chameleon.aspects.pointcut.expression;
+package chameleon.aspects.pointcut.expression.generic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
@@ -10,7 +11,7 @@ import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.VerificationResult;
 
 
-public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingle<E>> extends PointcutExpression<E> {
+public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingle<E, T>, T extends Element> extends PointcutExpression<E, T> {
 	private SingleAssociation<PointcutExpressionSingle, PointcutExpression> _expression = new SingleAssociation<PointcutExpressionSingle, PointcutExpression>(this);;
 
 	public PointcutExpressionSingle(PointcutExpression expression) {
@@ -44,5 +45,10 @@ public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingl
 			result.and(new BasicProblem(this, "The expression of this single expression cannot be null."));
 		
 		return result;
+	}
+	
+	@Override
+	public Set<Class> supportedJoinpoints() {
+		return expression().supportedJoinpoints();
 	}
 }

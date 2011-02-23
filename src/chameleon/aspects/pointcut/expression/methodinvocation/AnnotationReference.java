@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut;
+package chameleon.aspects.pointcut.expression.methodinvocation;
 
 import java.util.Collections;
 import java.util.List;

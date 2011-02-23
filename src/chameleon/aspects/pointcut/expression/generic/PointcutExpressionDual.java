@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression;
+package chameleon.aspects.pointcut.expression.generic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.VerificationResult;
 
 
-public abstract class PointcutExpressionDual<E extends PointcutExpressionDual<E>> extends PointcutExpression<E> {
+public abstract class PointcutExpressionDual<E extends PointcutExpressionDual<E, T>, T extends Element> extends PointcutExpression<E, T> {
 	
 	private SingleAssociation<PointcutExpressionDual, PointcutExpression> _expression1 = new SingleAssociation<PointcutExpressionDual, PointcutExpression>(this);
 	private SingleAssociation<PointcutExpressionDual, PointcutExpression> _expression2 = new SingleAssociation<PointcutExpressionDual, PointcutExpression>(this);

@@ -3,11 +3,13 @@ package chameleon.aspects.pointcut;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.Aspect;
-import chameleon.aspects.pointcut.expression.PointcutExpression;
+import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.declaration.DeclarationContainer;
@@ -16,6 +18,7 @@ import chameleon.core.declaration.Signature;
 import chameleon.core.declaration.SimpleNameDeclarationWithParametersHeader;
 import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
+import chameleon.core.expression.MethodInvocation;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
@@ -36,7 +39,7 @@ import chameleon.util.Util;
  * 	@author Jens De Temmerman
  *
  */
-public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, DeclarationWithHeader<E, SimpleNameDeclarationWithParametersSignature, Declaration, SimpleNameDeclarationWithParametersHeader> {
+public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, DeclarationWithHeader<E, SimpleNameDeclarationWithParametersSignature, Declaration, SimpleNameDeclarationWithParametersHeader> {
 	
 	public Pointcut() {
 		
@@ -69,17 +72,6 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 		setAsParent(_header, header);
 	}
 	
-//	@Override
-//	public void setSignature(Signature signature) {
-//	  	if(signature instanceof PointcutSignature) {
-//	  		_signature.connectTo(signature.parentLink());
-//	  	} else if(signature == null) {
-//	  		_signature.connectTo(null);
-//	  	} else {
-//	  		throw new ChameleonProgrammerException("Setting wrong type of signature. Provided: "+(signature == null ? null :signature.getClass().getName())+" Expected PointcutSignature");
-//	  	}
-//	}
-	
 	private SingleAssociation<Pointcut, PointcutExpression> _expression = new SingleAssociation<Pointcut, PointcutExpression>(this);
 	
 	public PointcutExpression expression() {
@@ -90,9 +82,31 @@ public abstract class Pointcut<E extends Pointcut<E>> extends NamespaceElementIm
 		setAsParent(_expression, expression);
 	}
 	
-	public abstract List<MatchResult> joinpoints(CompilationUnit compilationUnit) throws LookupException;
+	public List<MatchResult> joinpoints(CompilationUnit compilationUnit) throws LookupException {
+		List<MatchResult> results = new ArrayList<MatchResult>();
 		
-	public abstract E clone();
+		for (Class c : (Set<Class>) expression().supportedJoinpoints()) {
+			List<MethodInvocation> descendants = compilationUnit.descendants(c);
+			for (MethodInvocation mi : descendants) {
+				try {
+					MatchResult match = expression().matches(mi);
+				
+					if (match.isMatch())
+						results.add(match);
+				} catch (LookupException e) {
+					
+				}
+			}
+		}
+		return results; 
+	}	
+	public E clone() {
+		Pointcut<E> clone = new Pointcut<E>();
+		clone.setHeader((SimpleNameDeclarationWithParametersHeader) header().clone());
+		clone.setExpression(expression().clone());
+		
+		return (E) clone;
+	}
 	
 	private List<FormalParameter> unresolvedParameters() {
 		List<FormalParameter> unresolved = new ArrayList<FormalParameter>();
