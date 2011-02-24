@@ -32,10 +32,31 @@ public abstract class PointcutExpression<E extends PointcutExpression<E, T>, T e
 	
 	public abstract E clone();
 
-	public boolean hasParameter(FormalParameter fp) {
-		return false; // TODO: make this abstract and add sufficient implementation
-	}
+	/**
+	 * 	Check if this pointcut expression has the specified parameter
+	 * 
+	 * 	@param 	fp
+	 * 			The parameter to check
+	 * 	@return	True if the parameter can be resolved, false otherwise
+	 */
+	public abstract boolean hasParameter(FormalParameter fp);
 	
+	/**
+	 * 	Get the index of the given formal parameter in this pointcut expression
+	 * 
+	 * 	@param 	fp
+	 * 			The parameter to get the index of
+	 * 	@return	The index of the parameter if the parameter can be resolved, -1 otherwise
+	 */
+	public abstract int indexOfParameter(FormalParameter fp);
+
+	/**
+	 * 	Get the list of element types that are supported as joinpoints for this PointcutExpression.
+	 * 
+	 * 	E.g. A joinpoint that matches method invocations has returns {MethodInvocation.class}
+	 * 
+	 * 	@return	The list of supported types as joinpoint
+	 */
 	public abstract Set<Class> supportedJoinpoints();
 	
 	/**

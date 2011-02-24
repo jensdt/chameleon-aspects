@@ -14,6 +14,7 @@ import chameleon.core.expression.MethodInvocation;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.method.Method;
 import chameleon.core.modifier.Modifier;
+import chameleon.core.variable.FormalParameter;
 import chameleon.util.Util;
 
 public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvocationExpression<E, T>, T extends MethodInvocation> extends MethodInvocationPointcutExpression<E, T> {
@@ -36,10 +37,7 @@ public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvoca
 	}
 
 	@Override
-	public MatchResult matches(T joinpoint) throws LookupException {
-		if (!(joinpoint instanceof MethodInvocation))
-			return MatchResult.noMatch();
-		
+	public MatchResult matches(T joinpoint) throws LookupException {	
 		Method target = joinpoint.getElement();
 		
 		List<Modifier> modifiers = target.modifiers();
@@ -59,6 +57,20 @@ public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvoca
 		AnnotatedMethodInvocationExpression<E, T> clone = new AnnotatedMethodInvocationExpression<E, T>();
 		clone.setReference(reference().clone());
 		return (E) clone;
+	}
+
+	/**
+	 * 	{@inheritDoc}
+	 * 
+	 */
+	@Override
+	public boolean hasParameter(FormalParameter fp) {
+		return false;
+	}
+
+	@Override
+	public int indexOfParameter(FormalParameter fp) {
+		return -1;
 	}
 
 }

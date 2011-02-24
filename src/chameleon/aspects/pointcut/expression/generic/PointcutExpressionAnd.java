@@ -6,6 +6,7 @@ import java.util.Set;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
+import chameleon.core.variable.FormalParameter;
 
 public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T extends Element> extends PointcutExpressionDual<E, T> {
 
@@ -69,5 +70,27 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T exte
 				supportedJoinpoints.add(c);
 		
 		return supportedJoinpoints;
+	}
+
+	/**
+	 * 	{@inheritDoc}
+	 * 
+	 */
+	@Override
+	public boolean hasParameter(FormalParameter fp) {
+		return expression1().hasParameter(fp) || expression2().hasParameter(fp);
+	}
+
+	/**
+	 * 	{@inheritDoc}
+	 */
+	@Override
+	public int indexOfParameter(FormalParameter fp) {
+		int index = expression1().indexOfParameter(fp);
+		
+		if (index != -1)
+			return index;
+		
+		return expression2().indexOfParameter(fp);
 	}
 }
