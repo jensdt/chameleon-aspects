@@ -31,8 +31,7 @@ import chameleon.util.Util;
 
 public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> implements VariableContainer<E> {
 
-	public Advice(AdviceType type, TypeReference returnType) {
-		generateName();
+	public Advice(AdviceTypeEnum type, TypeReference returnType) {
 		setType(type);
 
 		if (returnType == null)
@@ -41,35 +40,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 			setReturnType(returnType);
 	}
 	
-	private static Set<String> nameRegistry = new HashSet<String>();
-	
-	/**
-	 * 	Generates a random name for this aspect. (26^8 possibilities so collisions shouldn't slow this down)
-	 */
-	private void generateName() {
-		String name;
-		
-		do {
-			name = getRandomName();
-		} while (nameRegistry.contains(name));
-		
-		nameRegistry.add(name);
-		setName(name);
-	}
-	
-	private Random r = new Random();
-	private String alphabet = "abcdefghijklmopqrstuvwxyz";
-	private String getRandomName() {
-		StringBuilder name = new StringBuilder();
-		for (int i = 0; i < 8; i++)
-			name.append(alphabet.charAt(r.nextInt(alphabet.length())));
-		
-		return name.toString();
-	}
-
-
-	private String name;
-	private AdviceType type;
+	private AdviceTypeEnum type;
 	private OrderedMultiAssociation<Advice<E>, FormalParameter> _parameters = new OrderedMultiAssociation<Advice<E>, FormalParameter>(this);
 	private SingleAssociation<Advice<E>, Element> _body = new SingleAssociation<Advice<E>, Element>(this);
 	private SingleAssociation<Advice<E>, PointcutReference> _pointcutReference = new SingleAssociation<Advice<E>, PointcutReference>(this);
@@ -171,8 +142,6 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 	@Override
 	public E clone() {
 		Advice clone = new Advice(type(), returnType().clone());
-		nameRegistry.remove(clone.name()); // clone will have registered a new name, don't need that
-		clone.setName(name); // Clones should have the same name!
 		clone.setPointcutReference(pointcutReference().clone());
 		clone.setBody(body().clone());
 		
@@ -195,16 +164,17 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 	@Override
 	public VerificationResult verifySelf() {
 		VerificationResult result = Valid.create();
-		
-		try {
-			if (!returnType().getType().getFullyQualifiedName().equals("void") && type() != AdviceType.AROUND)
-				result = result.and(new BasicProblem(this, "No return type allowed for " + type() + " advice"));
-				
-			
-		} catch (LookupException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		
+//		TODO: move this to advice
+//		try {
+//			if (!returnType().getType().getFullyQualifiedName().equals("void") && type() != AdviceType.AROUND)
+//				result = result.and(new BasicProblem(this, "No return type allowed for " + type() + " advice"));
+//				
+//			
+//		} catch (LookupException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		List<FormalParameter> unresolved = unresolvedParameters();
 		if (!unresolved.isEmpty()) {
@@ -247,19 +217,11 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E> impleme
 		return null;
 	}
 
-	public String name() {
-		return name;
-	}
-
-	protected void setName(String name) {
-		this.name = name;
-	}
-
-	public AdviceType type() {
+	public AdviceTypeEnum type() {
 		return type;
 	}
 
-	public void setType(AdviceType type) {
+	public void setType(AdviceTypeEnum type) {
 		this.type = type;
 	}
 	

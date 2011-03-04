@@ -13,12 +13,10 @@ import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.declaration.DeclarationContainer;
-import chameleon.core.declaration.DeclarationWithHeader;
 import chameleon.core.declaration.Signature;
 import chameleon.core.declaration.SimpleNameDeclarationWithParametersHeader;
 import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
-import chameleon.core.expression.MethodInvocation;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
@@ -39,7 +37,7 @@ import chameleon.util.Util;
  * 	@author Jens De Temmerman
  *
  */
-public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, DeclarationWithHeader<E, SimpleNameDeclarationWithParametersSignature, Declaration, SimpleNameDeclarationWithParametersHeader> {
+public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, Declaration<E, SimpleNameDeclarationWithParametersSignature, Declaration> {
 	
 	public Pointcut() {
 		
@@ -86,8 +84,8 @@ public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> imp
 		List<MatchResult> results = new ArrayList<MatchResult>();
 		
 		for (Class c : (Set<Class>) expression().supportedJoinpoints()) {
-			List<MethodInvocation> descendants = compilationUnit.descendants(c);
-			for (MethodInvocation mi : descendants) {
+			List<Element> descendants = compilationUnit.descendants(c);
+			for (Element mi : descendants) {
 				try {
 					MatchResult match = expression().matches(mi);
 				
