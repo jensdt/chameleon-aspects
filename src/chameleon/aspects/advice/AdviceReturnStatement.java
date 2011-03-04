@@ -10,7 +10,15 @@ import chameleon.oo.type.Type;
 import chameleon.support.statement.ReturnStatement;
 
 public class AdviceReturnStatement extends ReturnStatement {
-	  @Override
+	public AdviceReturnStatement() {
+		
+	}
+	
+	public AdviceReturnStatement(Expression expression) {
+		super(expression);
+	}
+
+	@Override
 	  public VerificationResult verifySelf() {
 	  	VerificationResult result = Valid.create();
 	  	
@@ -38,4 +46,12 @@ public class AdviceReturnStatement extends ReturnStatement {
 			}
 	  	return result;
 	  }
+	  
+	  public AdviceReturnStatement clone() {
+		  	Expression childClone = getExpression();
+		  	if(childClone != null) {
+		  		childClone = childClone.clone();
+		  	}
+		    return new AdviceReturnStatement(childClone);
+		  }
 }

@@ -8,6 +8,7 @@ import jnome.core.expression.ArrayInitializer;
 import jnome.core.type.ArrayTypeReference;
 import jnome.core.type.BasicJavaTypeReference;
 import chameleon.aspects.advice.Advice;
+import chameleon.aspects.advice.AdviceReturnStatement;
 import chameleon.aspects.advice.types.Around;
 import chameleon.core.expression.Expression;
 import chameleon.core.expression.MethodInvocation;
@@ -15,6 +16,8 @@ import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.statement.Block;
+import chameleon.oo.type.BasicTypeReference;
+import chameleon.support.expression.ClassCastExpression;
 import chameleon.support.expression.NullLiteral;
 import chameleon.support.member.simplename.method.RegularMethodInvocation;
 import chameleon.support.statement.ReturnStatement;
@@ -51,9 +54,18 @@ public class AroundReflectiveMethodInvocation extends ReflectiveMethodInvocation
 			pc.parentLink().getOtherRelation().replace(pc.parentLink(), proceedInvoc.parentLink());
 		}
 		
-		// We need an explicit return because the return type of the advice method is never 'void'
 		if (advice().returnType().getType().signature().name().equals("void"))
+			// We need an explicit return because the return type of the advice method is never 'void'
 			adviceBody.addStatement(new ReturnStatement(new NullLiteral()));
+		else {
+			// We need to find all return statements and cast the return expression to the return type.
+			// For instance in Java, the return type will be generic (T), so we need to cast to T. This isn't *always* necessary (e.g. return proceed())
+			// but no harm is done if we do it anyway in those cases.
+			for (AdviceReturnStatement st : adviceBody.descendants(AdviceReturnStatement.class)) {
+				ClassCastExpression cast = new ClassCastExpression(new BasicTypeReference("T"), st.getExpression());
+				st.setExpression(cast);
+			}
+		}
 		
 		return adviceBody;
 	}
