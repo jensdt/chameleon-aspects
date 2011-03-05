@@ -1,7 +1,6 @@
-package chameleon.aspects.advice.types.methodInvocation;
+package chameleon.aspects.advice.types.translation.methodInvocation;
 
 import java.util.List;
-import java.util.Map;
 
 import jnome.core.expression.ArrayCreationExpression;
 import jnome.core.expression.ArrayInitializer;
@@ -10,6 +9,9 @@ import jnome.core.type.BasicJavaTypeReference;
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.AdviceReturnStatement;
 import chameleon.aspects.advice.types.Around;
+import chameleon.aspects.advice.types.ProceedCall;
+import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.expression.Expression;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.expression.NamedTarget;
@@ -22,19 +24,15 @@ import chameleon.support.expression.NullLiteral;
 import chameleon.support.member.simplename.method.RegularMethodInvocation;
 import chameleon.support.statement.ReturnStatement;
 
-public class AroundReflectiveMethodInvocation extends ReflectiveMethodInvocation implements Around<Block, MethodInvocation> {
+public class AroundReflectiveMethodInvocation extends ReflectiveMethodInvocation implements Around {
 
-	public AroundReflectiveMethodInvocation(Advice advice, Map<String, String> variableNames) {
-		super("around", advice, variableNames);
+	public AroundReflectiveMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super("around", advice, joinpoint);
 	}
 
 	@Override
 	protected Block getInnerBody() throws LookupException {
 		Block adviceBody = (Block) advice().body().clone();
-		
-		String objectParamName = getVariableNames().get("objectParamName");
-		String methodNameParamName = getVariableNames().get("methodNameParamName");
-		String argumentNameParamName = getVariableNames().get("argumentNameParamName");
 		
 		// Replace each proceed call to the method call
 		List<ProceedCall> proceedCalls = adviceBody.descendants(ProceedCall.class);

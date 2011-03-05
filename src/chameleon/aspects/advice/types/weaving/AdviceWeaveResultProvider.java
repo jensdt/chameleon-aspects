@@ -1,4 +1,4 @@
-package chameleon.aspects.advice.types;
+package chameleon.aspects.advice.types.weaving;
 
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.pointcut.expression.MatchResult;
@@ -7,6 +7,6 @@ import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 
-public interface AdviceType<T, U extends Element> {
-	public T getAdviceTransformationResult(CompilationUnit compilationUnit, MatchResult<? extends PointcutExpression, ? extends U> joinpoint)  throws LookupException;
+public interface AdviceWeaveResultProvider<T extends Element, U> {
+	public U getWeaveResult(CompilationUnit compilationUnit, Advice advice, MatchResult<? extends PointcutExpression, ? extends T> joinpoint) throws LookupException;
 }

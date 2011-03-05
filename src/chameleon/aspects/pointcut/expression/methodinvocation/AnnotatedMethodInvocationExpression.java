@@ -37,7 +37,7 @@ public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvoca
 	}
 
 	@Override
-	public MatchResult matches(T joinpoint) throws LookupException {	
+	public MatchResult matches(MethodInvocation joinpoint) throws LookupException {	
 		Method target = joinpoint.getElement();
 		
 		List<Modifier> modifiers = target.modifiers();
@@ -45,7 +45,7 @@ public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvoca
 		for (Modifier modifier : modifiers) {
 			if (modifier instanceof AnnotationModifier) {
 				if (((AnnotationModifier) modifier).name().equals(reference().referencendName()))
-					return new MatchResult<AnnotatedMethodInvocationExpression, MethodInvocation>(this, (MethodInvocation) joinpoint);
+					return new MatchResult<AnnotatedMethodInvocationExpression, MethodInvocation>(this, joinpoint);
 			}
 		}
 		

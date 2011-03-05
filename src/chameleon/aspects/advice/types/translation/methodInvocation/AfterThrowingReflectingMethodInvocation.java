@@ -1,9 +1,9 @@
-package chameleon.aspects.advice.types.methodInvocation;
-
-import java.util.Map;
+package chameleon.aspects.advice.types.translation.methodInvocation;
 
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.types.AfterThrowing;
+import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
@@ -12,20 +12,16 @@ import chameleon.support.member.simplename.method.RegularMethodInvocation;
 import chameleon.support.statement.ReturnStatement;
 import chameleon.support.statement.ThrowStatement;
 
-public class AfterThrowingReflectingMethodInvocation extends ReflectiveMethodInvocation implements AfterThrowing<Block, MethodInvocation> {
+public class AfterThrowingReflectingMethodInvocation extends ReflectiveMethodInvocation implements AfterThrowing {
 
-	public AfterThrowingReflectingMethodInvocation(Advice advice, Map<String, String> variableNames) {
-		super("after-throwing", advice, variableNames);
+	public AfterThrowingReflectingMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super("after-throwing", advice, joinpoint);
 	}
 
 	@Override
 	protected Block getInnerBody() {
 		Block adviceBody = new Block();
-		
-		String objectParamName = getVariableNames().get("objectParamName");
-		String methodNameParamName = getVariableNames().get("methodNameParamName");
-		String argumentNameParamName = getVariableNames().get("argumentNameParamName");
-		
+
 		/*
 		 *	Create the proceed call
 		 */

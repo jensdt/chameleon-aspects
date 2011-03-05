@@ -1,4 +1,4 @@
-package chameleon.aspects.advice.types.methodInvocation;
+package chameleon.aspects.advice.types;
 
 import java.util.Iterator;
 import java.util.List;

@@ -1,7 +1,7 @@
 package chameleon.aspects.advice.types;
 
-import chameleon.core.element.Element;
+import chameleon.aspects.advice.types.translation.AdviceTranslationProvider;
 
-public interface AfterThrowing<T, U extends Element> extends AdviceType<T, U> {
+public interface AfterThrowing extends AdviceTranslationProvider {
 
 }

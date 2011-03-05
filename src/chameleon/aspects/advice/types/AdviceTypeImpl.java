@@ -1,13 +1,13 @@
 package chameleon.aspects.advice.types;
 
 import chameleon.aspects.advice.Advice;
-import chameleon.core.element.Element;
+import chameleon.aspects.advice.types.translation.AdviceTranslationProvider;
 
 /**
  * 	Represents a type of advice, e.g. After advice
  *
  */
-public abstract class AdviceTypeImpl<T, U extends Element> implements AdviceType<T, U> {
+public abstract class AdviceTypeImpl implements AdviceTranslationProvider {
 	/**
 	 * 	A text representation of this advice type
 	 */

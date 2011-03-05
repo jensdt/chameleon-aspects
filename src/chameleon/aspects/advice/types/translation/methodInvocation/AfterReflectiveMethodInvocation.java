@@ -1,6 +1,4 @@
-package chameleon.aspects.advice.types.methodInvocation;
-
-import java.util.Map;
+package chameleon.aspects.advice.types.translation.methodInvocation;
 
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.types.After;
@@ -16,19 +14,15 @@ import chameleon.support.statement.FinallyClause;
 import chameleon.support.statement.ReturnStatement;
 import chameleon.support.statement.TryStatement;
 
-public class AfterReflectiveMethodInvocation extends ReflectiveMethodInvocation implements After<Block, MethodInvocation> {
+public class AfterReflectiveMethodInvocation extends ReflectiveMethodInvocation implements After {
 
-	public AfterReflectiveMethodInvocation(Advice advice, Map<String, String> variableNames) {
-		super("after", advice, variableNames);
+	public AfterReflectiveMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super("after", advice, joinpoint);
 	}
 
 	@Override
 	protected Block getInnerBody() {
 		Block adviceBody = new Block();
-		
-		String objectParamName = getVariableNames().get("objectParamName");
-		String methodNameParamName = getVariableNames().get("methodNameParamName");
-		String argumentNameParamName = getVariableNames().get("argumentNameParamName");
 		
 		/*
 		 *	Create the proceed call
