@@ -23,22 +23,27 @@ import chameleon.util.Util;
  */
 public class MethodReference<E extends MethodReference<E>> extends NamespaceElementImpl<E> {
 	
-	public MethodReference(String type, QualifiedMethodHeader fqn) {
+	public MethodReference(QualifiedMethodHeader fqn, TypeReference type, String typeNameWithWC) {
+		setTypeNameWithWC(typeNameWithWC);
 		setType(type);
 		setFqn(fqn);
+	}
+	
+	public boolean hasExplicitType() {
+		return type() != null;
 	}
 	
 	/**
 	 *	Return type of the method 	
 	 */
-	private String type;
+	private String typeNameWithWC;
 	
-	private void setType(String type) {
-		this.type = type;
+	private void setTypeNameWithWC(String typeNameWithWC) {
+		this.typeNameWithWC = typeNameWithWC;
 	}
 	
-	public String type() {
-		return type;
+	public String typeNameWithWC() {
+		return typeNameWithWC;
 	}
 	
 	public String getFullyQualifiedName() {
@@ -49,7 +54,7 @@ public class MethodReference<E extends MethodReference<E>> extends NamespaceElem
 	 * 	The fully qualified name of the method
 	 */
 	private SingleAssociation<MethodReference<E>, QualifiedMethodHeader> _fqn = new SingleAssociation<MethodReference<E>, QualifiedMethodHeader>(this);
-
+		
 	private void setFqn(QualifiedMethodHeader fqn) {
 		setAsParent(_fqn, fqn);
 	}
@@ -58,11 +63,14 @@ public class MethodReference<E extends MethodReference<E>> extends NamespaceElem
 		return _fqn.getOtherEnd();
 	}
 
-	/**
-	 * 	Return the signature of this method
-	 */
-	public Signature signature() {
-		return fqn().methodHeader().signature(); // TODO: this is used to select the joinpoints, need to figure this out with packages etc
+	private SingleAssociation<MethodReference<E>, TypeReference> _typeRef = new SingleAssociation<MethodReference<E>, TypeReference>(this);
+
+	private void setType(TypeReference type) {
+		setAsParent(_typeRef, type);
+	}
+	
+	public TypeReference type() {
+		return _typeRef.getOtherEnd();
 	}
 
 
@@ -70,13 +78,17 @@ public class MethodReference<E extends MethodReference<E>> extends NamespaceElem
 	public List<? extends Element> children() {
 		List<Element> result = new ArrayList<Element>();
 		Util.addNonNull(fqn(), result);
-		
+		Util.addNonNull(type(), result);
 		return result;
 	}
 
 	@Override
 	public E clone() {
-		return (E) new MethodReference<E>(type(), (QualifiedMethodHeader) fqn().clone());
+		TypeReference typeClone = null;
+		if (type() != null)
+			typeClone = type().clone();
+		
+		return (E) new MethodReference<E>((QualifiedMethodHeader) fqn().clone(), typeClone, typeNameWithWC);
 	}
 
 	@Override

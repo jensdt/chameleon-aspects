@@ -6,9 +6,7 @@ import jnome.core.expression.ArrayCreationExpression;
 import jnome.core.expression.ArrayInitializer;
 import jnome.core.type.ArrayTypeReference;
 import jnome.core.type.BasicJavaTypeReference;
-import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.AdviceReturnStatement;
-import chameleon.aspects.advice.types.Around;
 import chameleon.aspects.advice.types.ProceedCall;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
@@ -24,10 +22,10 @@ import chameleon.support.expression.NullLiteral;
 import chameleon.support.member.simplename.method.RegularMethodInvocation;
 import chameleon.support.statement.ReturnStatement;
 
-public class AroundReflectiveMethodInvocation extends ReflectiveMethodInvocation implements Around {
+public class AroundReflectiveMethodInvocation extends ReflectiveMethodInvocation {
 
-	public AroundReflectiveMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
-		super("around", advice, joinpoint);
+	public AroundReflectiveMethodInvocation(MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super(joinpoint);
 	}
 
 	@Override

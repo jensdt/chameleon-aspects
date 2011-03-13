@@ -12,7 +12,7 @@ import chameleon.support.statement.CatchClause;
 public class InsideCatchClause implements AdviceWeaveResultProvider<CatchClause, CatchClause> {
 
 	@Override
-	public CatchClause getWeaveResult(CompilationUnit compilationUnit, Advice advice, MatchResult<? extends PointcutExpression, ? extends CatchClause> joinpoint) throws LookupException {
+	public CatchClause getWeaveResult(Advice advice, MatchResult<? extends PointcutExpression, ? extends CatchClause> joinpoint) throws LookupException {
 		CatchClause newCatchClause = joinpoint.getJoinpoint().clone();
 		newCatchClause.setStatement((Block) advice.body().clone());
 		

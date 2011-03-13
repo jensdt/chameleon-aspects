@@ -19,6 +19,7 @@ import chameleon.core.declaration.SimpleNameDeclarationWithParametersSignature;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.DeclarationSelector;
 import chameleon.core.lookup.LookupException;
+import chameleon.core.lookup.LookupStrategy;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.scope.Scope;
 import chameleon.core.validation.BasicProblem;
@@ -51,6 +52,31 @@ public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> imp
 		this(header);
 		setExpression(expression);
 	}
+	
+	public LookupStrategy lexicalLookupStrategy(Element element) throws LookupException {
+		if (element == header()) {
+			return parent().lexicalLookupStrategy(this);
+		} else {
+			if (_lexical == null) {
+				_lexical = language().lookupFactory()
+						.createLexicalLookupStrategy(localLookupStrategy(),
+								this);
+			}
+			return _lexical;
+		}
+	}
+
+	public LookupStrategy localLookupStrategy() {
+		if (_local == null) {
+			_local = language().lookupFactory()
+					.createTargetLookupStrategy(this);
+		}
+		return _local;
+	}
+
+	private LookupStrategy _local;
+
+	private LookupStrategy _lexical;
 
 	/**
 	 * 	Get the Aspect that this Pointcut belongs to

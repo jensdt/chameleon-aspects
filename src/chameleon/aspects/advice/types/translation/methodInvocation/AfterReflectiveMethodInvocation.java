@@ -1,7 +1,5 @@
 package chameleon.aspects.advice.types.translation.methodInvocation;
 
-import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.types.After;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.expression.MethodInvocation;
@@ -14,14 +12,14 @@ import chameleon.support.statement.FinallyClause;
 import chameleon.support.statement.ReturnStatement;
 import chameleon.support.statement.TryStatement;
 
-public class AfterReflectiveMethodInvocation extends ReflectiveMethodInvocation implements After {
+public class AfterReflectiveMethodInvocation extends ReflectiveMethodInvocation {
 
-	public AfterReflectiveMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
-		super("after", advice, joinpoint);
+	public AfterReflectiveMethodInvocation(MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super(joinpoint);
 	}
 
 	@Override
-	protected Block getInnerBody() {
+	protected Block getInnerBody() throws LookupException {
 		Block adviceBody = new Block();
 		
 		/*
@@ -38,11 +36,13 @@ public class AfterReflectiveMethodInvocation extends ReflectiveMethodInvocation 
 	}
 	
 	@Override
-	protected TryStatement getEnclosingTry(Block tryBody, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) throws LookupException {
+	public TryStatement getEnclosingTry(Block tryBody) throws LookupException {
 		// TODO Auto-generated method stub
-		TryStatement enclosingTry = super.getEnclosingTry(tryBody, joinpoint);
+		TryStatement enclosingTry = super.getEnclosingTry(tryBody);
 		enclosingTry.setFinallyClause(new FinallyClause(((Block) advice().body()).clone()));
 		
 		return enclosingTry;
 	}
+
+
 }

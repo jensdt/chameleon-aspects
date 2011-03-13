@@ -1,25 +1,24 @@
 package chameleon.aspects.advice.types.translation.methodInvocation;
 
-import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.types.AfterThrowing;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
+import chameleon.core.lookup.LookupException;
 import chameleon.core.statement.Block;
 import chameleon.support.member.simplename.method.RegularMethodInvocation;
 import chameleon.support.statement.ReturnStatement;
 import chameleon.support.statement.ThrowStatement;
 
-public class AfterThrowingReflectingMethodInvocation extends ReflectiveMethodInvocation implements AfterThrowing {
+public class AfterThrowingReflectingMethodInvocation extends ReflectiveMethodInvocation  {
 
-	public AfterThrowingReflectingMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
-		super("after-throwing", advice, joinpoint);
+	public AfterThrowingReflectingMethodInvocation(MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super(joinpoint);
 	}
 
 	@Override
-	protected Block getInnerBody() {
+	protected Block getInnerBody() throws LookupException {
 		Block adviceBody = new Block();
 
 		/*
@@ -36,7 +35,7 @@ public class AfterThrowingReflectingMethodInvocation extends ReflectiveMethodInv
 	}
 	
 	@Override
-	protected Block getRethrowBody(NamedTargetExpression target) {
+	public Block getRethrowBody(NamedTargetExpression target) {
 		Block rethrowBody = new Block();
 		ThrowStatement rethrow = new ThrowStatement(target);
 

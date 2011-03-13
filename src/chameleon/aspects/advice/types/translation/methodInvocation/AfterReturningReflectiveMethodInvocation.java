@@ -1,12 +1,11 @@
 package chameleon.aspects.advice.types.translation.methodInvocation;
 
-import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.types.AfterReturning;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
+import chameleon.core.lookup.LookupException;
 import chameleon.core.statement.Block;
 import chameleon.core.variable.VariableDeclaration;
 import chameleon.oo.type.BasicTypeReference;
@@ -14,14 +13,14 @@ import chameleon.support.member.simplename.method.RegularMethodInvocation;
 import chameleon.support.statement.ReturnStatement;
 import chameleon.support.variable.LocalVariableDeclarator;
 
-public class AfterReturningReflectiveMethodInvocation extends ReflectiveMethodInvocation implements AfterReturning {
+public class AfterReturningReflectiveMethodInvocation extends ReflectiveMethodInvocation {
 
-	public AfterReturningReflectiveMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
-		super("after-returning", advice, joinpoint);
+	public AfterReturningReflectiveMethodInvocation(MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super(joinpoint);
 	}
 
 	@Override
-	protected Block getInnerBody() {
+	protected Block getInnerBody() throws LookupException {
 		Block adviceBody = new Block();
 
 		/*

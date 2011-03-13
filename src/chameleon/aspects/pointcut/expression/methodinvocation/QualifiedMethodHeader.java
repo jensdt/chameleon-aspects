@@ -17,21 +17,21 @@ import chameleon.util.Util;
 public class QualifiedMethodHeader<E extends QualifiedMethodHeader<E>> extends NamespaceElementImpl<E> {
 	
 	private SingleAssociation<QualifiedMethodHeader, QualifiedName> _prefixes = new SingleAssociation<QualifiedMethodHeader, QualifiedName>(this);
-	private SingleAssociation<QualifiedMethodHeader, SimpleNameDeclarationWithParametersHeader> _methodHeader = new SingleAssociation<QualifiedMethodHeader, SimpleNameDeclarationWithParametersHeader>(this);
+	private SingleAssociation<QualifiedMethodHeader, SimpleNameDeclarationWithParameterTypesHeader> _methodHeader = new SingleAssociation<QualifiedMethodHeader, SimpleNameDeclarationWithParameterTypesHeader>(this);
 	
 	public QualifiedMethodHeader() {
 		super();
 	}
 	
-	public QualifiedMethodHeader(SimpleNameDeclarationWithParametersHeader header) {
+	public QualifiedMethodHeader(SimpleNameDeclarationWithParameterTypesHeader header) {
 		setMethodheader(header);
 	}
 	
-	public SimpleNameDeclarationWithParametersHeader methodHeader() {
+	public SimpleNameDeclarationWithParameterTypesHeader methodHeader() {
 		return _methodHeader.getOtherEnd();
 	}
 	
-	public void setMethodheader(SimpleNameDeclarationWithParametersHeader header) {
+	public void setMethodheader(SimpleNameDeclarationWithParameterTypesHeader header) {
 		setAsParent(_methodHeader, header);
 	}
 	
@@ -78,7 +78,7 @@ public class QualifiedMethodHeader<E extends QualifiedMethodHeader<E>> extends N
 	public E clone() {
 		QualifiedMethodHeader result = new QualifiedMethodHeader();
 		result.setPrefixes(prefixes().clone());
-		result.setMethodheader((SimpleNameDeclarationWithParametersHeader) methodHeader().clone());
+		result.setMethodheader((SimpleNameDeclarationWithParameterTypesHeader) methodHeader().clone());
 		
 		return (E) result;
 	}

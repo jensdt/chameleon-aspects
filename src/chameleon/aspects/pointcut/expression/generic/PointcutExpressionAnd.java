@@ -63,7 +63,7 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T exte
 			if (expression2().isSupported(c))
 				supportedJoinpoints.add(c);
 		
-		Set<Class> supported2 = expression1().supportedJoinpoints();
+		Set<Class> supported2 = expression2().supportedJoinpoints();
 		
 		for (Class c : supported2)
 			if (!supportedJoinpoints.contains(c) && expression1().isSupported(c))

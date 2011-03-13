@@ -1,9 +1,11 @@
 package chameleon.aspects.pointcut.expression.generic;
 
+import java.util.List;
 import java.util.Set;
 
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
@@ -74,5 +76,9 @@ public abstract class PointcutExpression<E extends PointcutExpression<E, T>, T e
 		}
 		
 		return false;
+	}
+	
+	public List<? extends RuntimePointcutExpression> getAllRuntimePointcutExpressions() {
+		return descendants(RuntimePointcutExpression.class);
 	}
 }

@@ -58,19 +58,4 @@ public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvoca
 		clone.setReference(reference().clone());
 		return (E) clone;
 	}
-
-	/**
-	 * 	{@inheritDoc}
-	 * 
-	 */
-	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		return false;
-	}
-
-	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		return -1;
-	}
-
 }

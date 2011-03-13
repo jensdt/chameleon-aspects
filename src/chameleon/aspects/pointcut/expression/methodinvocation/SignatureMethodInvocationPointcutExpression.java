@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import jnome.core.type.RegularJavaType;
+
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
 import chameleon.core.expression.MethodInvocation;
+import chameleon.core.lookup.LocalLookupStrategy;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.method.Method;
 import chameleon.core.variable.FormalParameter;
 import chameleon.oo.type.Type;
+import chameleon.oo.type.TypeReference;
 import chameleon.util.Util;
 
 public class SignatureMethodInvocationPointcutExpression<E extends SignatureMethodInvocationPointcutExpression<E, T>, T extends MethodInvocation> extends MethodInvocationPointcutExpression<E, T> {
@@ -33,33 +37,59 @@ public class SignatureMethodInvocationPointcutExpression<E extends SignatureMeth
 	@Override
 	public MatchResult matches(T joinpoint) throws LookupException {
 		Method e = joinpoint.getElement();
+
+		// Check if the returntype matches
+		// Types match if: the type of the method is a (sub)type of the type declared in the pointcut expression.
+		// E.g. public Integer getCalculationResult() matches call(Number getCalculationResult)
 		
-		// Check if the type matches
-		if (!sameAsWithWildcard(e.returnTypeReference().getType().signature().name(), methodReference().type()))
+		// If the type name contains no wild cards, it is as a type that is known (e.g. through a fqn or imports).
+		// If it does contain wild cards, do string comparison to check
+		boolean matches = false;
+		if (methodReference().hasExplicitType())
+			 matches = e.returnType().assignableTo(methodReference().type().getType());
+		else {
+			matches = sameAsWithWildcard(e.returnType().getFullyQualifiedName(), methodReference().typeNameWithWC());
+			
+			Iterator<Type> superTypeIterator = e.returnType().getAllSuperTypes().iterator();
+			
+			while (!matches && superTypeIterator.hasNext()) {
+				matches = sameAsWithWildcard(superTypeIterator.next().getFullyQualifiedName(), methodReference().typeNameWithWC());
+			}
+		}
+		
+		if (!matches)
 			return MatchResult.noMatch();
 				
 		
 		// Check if the signature matches
-		if (!sameAsWithWildcard(e.signature().name(), methodReference().signature().name()))
+		if (!sameAsWithWildcard(e.signature().name(), methodReference().fqn().methodHeader().name()))
 			return MatchResult.noMatch();
 		
 		// Check if the FQN matches
-		String jpFqn = ((Type) e.nearestAncestor(Type.class)).getFullyQualifiedName();
+		Type definedType = ((RegularJavaType) ((LocalLookupStrategy) joinpoint.getTarget().targetContext()).declarationContainer()).getType();
 		String definedFqn = methodReference().getFullyQualifiedName();
 
-		if (!sameFQNWithWildcard(jpFqn, definedFqn))
+		matches = sameFQNWithWildcard(definedType.getFullyQualifiedName(), definedFqn);
+		
+		Iterator<Type> superTypeIterator = definedType.getAllSuperTypes().iterator();
+		while (!matches && superTypeIterator.hasNext()) {
+			
+			matches = sameFQNWithWildcard(superTypeIterator.next().getFullyQualifiedName(), definedFqn);
+		}
+		
+		if (!matches)
 			return MatchResult.noMatch();
 		
-		// Check if the parameters match
+		// Check if the parameter types match
 		Iterator<FormalParameter> methodArguments = e.formalParameters().iterator();
-		Iterator<Type> argumentTypes = methodReference().fqn().methodHeader().formalParameterTypes().iterator();
+		Iterator<TypeReference> argumentTypes = methodReference().fqn().methodHeader().types().iterator();
 	
 		
 		while (methodArguments.hasNext() && argumentTypes.hasNext()) {
-			Type argType = argumentTypes.next();
+			TypeReference argType = argumentTypes.next();
 			FormalParameter methodArg = methodArguments.next();
-			if (!argType.signature().name().equals(methodArg.getType().signature().name()))
-					
+			
+			if (!methodArg.getType().assignableTo(argType.getType()))	
 				return MatchResult.noMatch();
 		}
 		
@@ -70,6 +100,10 @@ public class SignatureMethodInvocationPointcutExpression<E extends SignatureMeth
 		return new MatchResult<SignatureMethodInvocationPointcutExpression, MethodInvocation>(this, (MethodInvocation) joinpoint);
 	}
 	
+	private boolean containsWildcards(String type) {
+		return type.contains("**");
+	}
+
 	/**
 	 * 	Match rules:
 	 * 			hrm.Person matches with:
@@ -102,12 +136,12 @@ public class SignatureMethodInvocationPointcutExpression<E extends SignatureMeth
 	}
 
 	/**
-	 * 	Check if s1 is the same as s2 - s2 can contain a wildcard (** = any charater 0 or more times), s1 can
-	 *  contain the wildchard character but it will not be treated as a wildcard.
+	 * 	Check if s1 is the same as s2 - s2 can contain a wild card (** = any character 0 or more times), s1 can
+	 *  contain the wild card character but it will not be treated as such.
 	 *  
 	 */
 	public boolean sameAsWithWildcard(String s1, String s2) {
-		// Turn s2 into a regexp. We convert the wildcard character (**) to a regexp-wildcard (.*) and treat
+		// Turn s2 into a regexp. We convert the wild card character (**) to a regexp-wildcard (.*) and treat
 		// all the rest as a literal (between \Q and \E)
 		String regexp = "\\Q" + s2.replace("**", "\\E(.*)\\Q") + "\\E"; 
 		
@@ -126,33 +160,5 @@ public class SignatureMethodInvocationPointcutExpression<E extends SignatureMeth
 	@Override
 	public E clone() {
 		return (E) new SignatureMethodInvocationPointcutExpression<E, T>(methodReference().clone()); 
-	}
-	
-	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		// Used indexOf to avoid code duplication
-		return indexOfParameter(fp) != -1;
-	}
-	
-	public int indexOfParameter(FormalParameter fp) {
-		List<FormalParameter> methodParameters = methodReference().fqn().methodHeader().formalParameters();
-		
-		int index = 0;
-		for (FormalParameter formalParameter : methodParameters) {
-			try {
-				if (fp.getName().equals(formalParameter.getName())
-					&& (formalParameter.getType().sameAs(fp.getType())
-						|| formalParameter.getType().subTypeOf(fp.getType())))
-						return index;
-			} catch (LookupException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			index++;
-		}
-		
-		return -1;
-	}
-	
+	}	
 }

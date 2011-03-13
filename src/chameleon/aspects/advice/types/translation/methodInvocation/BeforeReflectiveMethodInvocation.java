@@ -1,24 +1,23 @@
 package chameleon.aspects.advice.types.translation.methodInvocation;
 
-import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.types.Before;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
+import chameleon.core.lookup.LookupException;
 import chameleon.core.statement.Block;
 import chameleon.support.member.simplename.method.RegularMethodInvocation;
 import chameleon.support.statement.ReturnStatement;
 
-public class BeforeReflectiveMethodInvocation extends ReflectiveMethodInvocation implements Before {
+public class BeforeReflectiveMethodInvocation extends ReflectiveMethodInvocation  {
 
-	public BeforeReflectiveMethodInvocation(Advice advice, MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
-		super("before", advice, joinpoint);
+	public BeforeReflectiveMethodInvocation(MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
+		super(joinpoint);
 	}
 	
 	@Override
-	protected Block getInnerBody() {
+	protected Block getInnerBody() throws LookupException {
 		Block adviceBody = new Block();
 		
 		/*
