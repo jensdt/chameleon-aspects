@@ -5,6 +5,7 @@ import java.util.Set;
 
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.runtime.IfPointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
@@ -80,5 +81,19 @@ public abstract class PointcutExpression<E extends PointcutExpression<E, T>, T e
 	
 	public List<? extends RuntimePointcutExpression> getAllRuntimePointcutExpressions() {
 		return descendants(RuntimePointcutExpression.class);
+	}
+	
+	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
+		if (type.isAssignableFrom(getClass()))
+			return clone();
+		else
+			return null;
+	}
+
+	public PointcutExpression removeFromTree(Class<? extends PointcutExpression> type) {
+		if (type.isAssignableFrom(getClass()))
+			return null;
+		else
+			return clone();
 	}
 }

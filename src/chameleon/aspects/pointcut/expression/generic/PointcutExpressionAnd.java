@@ -93,4 +93,34 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T exte
 		
 		return expression2().indexOfParameter(fp);
 	}
+	
+	@Override
+	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
+		PointcutExpression left = expression1().getPrunedTree(type);
+		PointcutExpression right = expression2().getPrunedTree(type);
+		
+		if (left == null && right == null)
+			return null;
+		if (left == null && right != null)
+			return right;
+		if (left != null && right == null)
+			return left;
+		
+		return new PointcutExpressionAnd(left, right);
+	}
+	
+	@Override
+	public PointcutExpression removeFromTree(Class<? extends PointcutExpression> type) {
+		PointcutExpression left = expression1().removeFromTree(type);
+		PointcutExpression right = expression2().removeFromTree(type);
+		
+		if (left == null && right == null)
+			return null;
+		if (left == null && right != null)
+			return right;
+		if (left != null && right == null)
+			return left;
+		
+		return new PointcutExpressionAnd(left, right);
+	}
 }

@@ -8,6 +8,7 @@ import chameleon.aspects.advice.types.translation.methodInvocation.ReflectiveMet
 import chameleon.aspects.pointcut.expression.runtime.ArgsPointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.TypeOrParameter;
+import chameleon.core.expression.Expression;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
@@ -133,6 +134,40 @@ public class RuntimeArgumentsTypeCheck extends RuntimeTransformer<NormalMethod> 
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@Override
+	public Expression getExpression(RuntimePointcutExpression expr) {
+		if (!(expr instanceof ArgsPointcutExpression))
+			return null;
+		
+		ArgsPointcutExpression argumentsExpression = (ArgsPointcutExpression) expr;
+		
+		// First, add a check if the number of parameters matches
+		NamedTargetExpression parLength = new NamedTargetExpression("length", new NamedTargetExpression(reflectiveMethodInvocation.argumentNameParamName));
+		InfixOperatorInvocation equals = new InfixOperatorInvocation("!=", parLength);
+		equals.addArgument(new RegularLiteral(new BasicTypeReference("int"), Integer.toString(argumentsExpression.parameters().size())));
+		
+		// Add a check for each parameter defined in the Arguments expression
+		int i = 0;
+		for (NamedTargetExpression parameter : (List<NamedTargetExpression>) argumentsExpression.parameters()) {
+			try {
+				TypeReference t = new BasicTypeReference(parameter.getType().getFullyQualifiedName());
+				// Access the correct element of the array
+				ArrayAccessExpression arrayAccess = new ArrayAccessExpression(new NamedTargetExpression(reflectiveMethodInvocation.argumentNameParamName));
+				arrayAccess.addIndex(new FilledArrayIndex(new RegularLiteral(new BasicTypeReference("int"), Integer.toString(i++))));
+							
+				// Create the instanceof
+				InstanceofExpression test = new InstanceofExpression(arrayAccess, t.clone());
+				
+				// Negate it
+				PrefixOperatorInvocation negation = new PrefixOperatorInvocation("!", test);
+			} catch (LookupException e) {
+				
+			}
+		}
+		
+		return equals;
 	}
 
 }

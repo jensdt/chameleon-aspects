@@ -6,6 +6,7 @@ import chameleon.aspects.advice.runtimetransformation.RuntimeTransformer;
 import chameleon.aspects.advice.types.translation.methodInvocation.ReflectiveMethodInvocation;
 import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.TypePointcutExpression;
+import chameleon.core.expression.Expression;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
@@ -107,6 +108,12 @@ public class RuntimeTypeCheck extends RuntimeTransformer<NormalMethod>  {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@Override
+	public Expression getExpression(RuntimePointcutExpression expr) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
