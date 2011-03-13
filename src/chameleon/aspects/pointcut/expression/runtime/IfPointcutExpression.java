@@ -41,7 +41,11 @@ public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends Run
 
 	@Override
 	public E clone() {
-		return (E) new IfPointcutExpression<E>(expression().clone());
+		Expression clonedExpression = null;
+		if (expression() != null)
+			clonedExpression = expression().clone();
+		
+		return (E) new IfPointcutExpression<E>(clonedExpression);
 	}
 
 	@Override

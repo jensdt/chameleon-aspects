@@ -19,6 +19,7 @@ import chameleon.aspects.Aspect;
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.runtimetransformation.RuntimeTransformer;
 import chameleon.aspects.advice.runtimetransformation.methodinvocation.RuntimeArgumentsTypeCheck;
+import chameleon.aspects.advice.runtimetransformation.methodinvocation.RuntimeIfCheck;
 import chameleon.aspects.advice.runtimetransformation.methodinvocation.RuntimeTypeCheck;
 import chameleon.aspects.advice.types.translation.ReflectiveAdviceTransformationProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
@@ -26,6 +27,7 @@ import chameleon.aspects.namingRegistry.NamingRegistryFactory;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.ArgsPointcutExpression;
+import chameleon.aspects.pointcut.expression.runtime.IfPointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.TargetTypePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.ThisTypePointcutExpression;
@@ -439,6 +441,9 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		if (pointcutExpression instanceof TypePointcutExpression)
 			return true;
 		
+		if (pointcutExpression instanceof IfPointcutExpression)
+			return true;
+		
 		return false;
 	}
 
@@ -452,6 +457,9 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		
 		if (pointcutExpression instanceof TargetTypePointcutExpression)
 			return new RuntimeTypeCheck(this, new NamedTargetExpression(objectParamName));
+		
+		if (pointcutExpression instanceof IfPointcutExpression)
+			return new RuntimeIfCheck(this);
 		
 		return null;
 	}
