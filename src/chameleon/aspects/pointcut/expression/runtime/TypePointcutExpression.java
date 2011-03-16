@@ -59,11 +59,6 @@ public abstract class TypePointcutExpression<E extends TypePointcutExpression<E>
 	}
 	
 	@Override
-	public MatchResult matches(Element joinpoint) throws LookupException {
-		return new MatchResult(this, joinpoint);
-	}
-	
-	@Override
 	public List<? extends Element> children() {
 		return Util.createNonNullList(parameter());
 	}

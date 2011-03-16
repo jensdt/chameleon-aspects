@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
 import jnome.core.type.RegularJavaType;
 
 import org.rejuse.association.SingleAssociation;
@@ -160,5 +162,10 @@ public class SignatureMethodInvocationPointcutExpression<E extends SignatureMeth
 	@Override
 	public E clone() {
 		return (E) new SignatureMethodInvocationPointcutExpression<E, T>(methodReference().clone()); 
+	}
+
+	@Override
+	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+		return super.matchesInverse(joinpoint);
 	}	
 }

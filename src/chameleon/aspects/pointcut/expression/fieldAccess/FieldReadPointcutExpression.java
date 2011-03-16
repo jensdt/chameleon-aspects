@@ -50,7 +50,7 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 		
 		// Get the fully qualified name of this field
 		String fqn = ((RegularType) joinpoint.getElement().nearestAncestor(RegularType.class)).getFullyQualifiedName() + "." + joinpoint.signature().name();
-		System.out.println(fqn + " - " + fieldReference().reference());
+		
 		if (fqn.equals(fieldReference().reference()))
 			return new MatchResult(this, joinpoint);
 		
@@ -77,4 +77,9 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 		return Collections.<Class>singleton(NamedTargetExpression.class);
 	}
 
+	@Override
+	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
 }

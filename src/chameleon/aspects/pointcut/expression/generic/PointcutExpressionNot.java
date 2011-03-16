@@ -1,9 +1,5 @@
 package chameleon.aspects.pointcut.expression.generic;
 
-import java.util.List;
-
-import javax.management.RuntimeErrorException;
-
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
@@ -17,12 +13,37 @@ public class PointcutExpressionNot<E extends PointcutExpressionNot<E, T>, T exte
 
 	@Override
 	public MatchResult matches(T joinpoint) throws LookupException {
-		throw new RuntimeException();
+		return expression().matchesInverse(joinpoint);
+	}
+	
+	@Override
+	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+		return expression().matches(joinpoint);
 	}
 
 	@Override
 	public E clone() {
 		return (E) new PointcutExpressionNot<E, T>(expression().clone());
+	}
+	
+	@Override
+	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
+		PointcutExpression expression = expression().getPrunedTree(type);
+		
+		if (expression == null)
+			return null;
+		
+		return new PointcutExpressionNot(expression);
+	}
+	
+	@Override
+	public PointcutExpression removeFromTree(Class<? extends PointcutExpression> type) {
+		PointcutExpression expression = expression().removeFromTree(type);
+		
+		if (expression == null)
+			return null;
+		
+		return new PointcutExpressionNot(expression);
 	}
 	
 	/**
@@ -41,5 +62,4 @@ public class PointcutExpressionNot<E extends PointcutExpressionNot<E, T>, T exte
 	public int indexOfParameter(FormalParameter fp) {
 		return expression().indexOfParameter(fp);
 	}
-
 }

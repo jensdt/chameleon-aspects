@@ -35,11 +35,6 @@ public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends Run
 	}
 
 	@Override
-	public MatchResult matches(Element joinpoint) throws LookupException {
-		return new MatchResult(this, joinpoint);
-	}
-
-	@Override
 	public E clone() {
 		Expression clonedExpression = null;
 		if (expression() != null)

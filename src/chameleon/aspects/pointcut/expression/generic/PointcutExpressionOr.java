@@ -24,6 +24,17 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E, T>, T extend
 		
 		return expression2().matches(joinpoint);
 	}
+	
+	@Override
+	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+		MatchResult r1 = expression1().matchesInverse(joinpoint);
+		MatchResult r2 = expression2().matchesInverse(joinpoint);
+		
+		if (r1.isMatch() && r2.isMatch())
+			return new MatchResult(this, joinpoint);
+		else
+			return MatchResult.noMatch();
+	}
 
 	@Override
 	public E clone() {
@@ -120,6 +131,6 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E, T>, T extend
 		if (left != null && right == null)
 			return left;
 		
-		return new PointcutExpressionAnd(left, right);
+		return new PointcutExpressionOr(left, right);
 	}
 }

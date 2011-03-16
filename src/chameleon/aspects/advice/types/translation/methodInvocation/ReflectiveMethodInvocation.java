@@ -9,6 +9,7 @@ import jnome.core.expression.ArrayCreationExpression;
 import jnome.core.expression.ArrayInitializer;
 import jnome.core.expression.ClassLiteral;
 import jnome.core.expression.invocation.ConstructorInvocation;
+import jnome.core.language.Java;
 import jnome.core.type.ArrayTypeReference;
 import jnome.core.type.BasicJavaTypeReference;
 import jnome.core.variable.JavaVariableDeclaration;
@@ -17,10 +18,12 @@ import org.rejuse.predicate.SafePredicate;
 
 import chameleon.aspects.Aspect;
 import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.runtimetransformation.RuntimeTransformer;
-import chameleon.aspects.advice.runtimetransformation.methodinvocation.RuntimeArgumentsTypeCheck;
-import chameleon.aspects.advice.runtimetransformation.methodinvocation.RuntimeIfCheck;
-import chameleon.aspects.advice.runtimetransformation.methodinvocation.RuntimeTypeCheck;
+import chameleon.aspects.advice.runtimetransformation.Coordinator;
+import chameleon.aspects.advice.runtimetransformation.reflectiveinvocation.MethodCoordinator;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeArgumentsTypeCheck;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeIfCheck;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeTypeCheck;
 import chameleon.aspects.advice.types.translation.ReflectiveAdviceTransformationProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.namingRegistry.NamingRegistryFactory;
@@ -72,13 +75,12 @@ import chameleon.support.variable.LocalVariableDeclarator;
 
 public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransformationProvider {
 
-	public final String objectParamName = "_$object";
 	public final String methodNameParamName = "_$methodName";
 	public final String argumentNameParamName = "_$arguments";
 	public final String argumentIndexParamName = "_$argumentIndex";
 	public final String typesParamName = "_$types";
 	public final String retvalName = "_$retval";
-	public final String calleeName = "_$callee";
+	
 	private Advice advice; 
 	
 	public ReflectiveMethodInvocation(MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
@@ -301,7 +303,21 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 			argumentsAccess.addIndex(new FilledArrayIndex(argumentsIndexAccess));
 
 			// Add the cast, since the arguments is just an Object array
-			ClassCastExpression cast = new ClassCastExpression(fp.getTypeReference().clone(), argumentsAccess);
+			// Mind boxable-unboxable types
+			Java java = fp.language(Java.class);
+			
+			TypeReference typeToCastTo = null;
+			try {
+				if (fp.getTypeReference().getType().isTrue(fp.language().property("primitive")))
+					typeToCastTo = new BasicTypeReference (java.box(fp.getTypeReference().getType()).getFullyQualifiedName());
+				else
+					typeToCastTo = fp.getTypeReference().clone();
+			} catch (LookupException e) {
+				System.out.println("Lookupexception while boxing");
+			}
+				
+			
+			ClassCastExpression cast = new ClassCastExpression(typeToCastTo, argumentsAccess);
 			
 			parameterInjectorDecl.setInitialization(cast);
 			parameterInjector.add(parameterInjectorDecl);
@@ -433,34 +449,40 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		return "proceed";
 	}
 	
+
+
 	@Override
 	public boolean canTransform(RuntimePointcutExpression pointcutExpression) {
+		if (super.canTransform(pointcutExpression))
+			return true;
+		
 		if (pointcutExpression instanceof ArgsPointcutExpression)
-			return true;
-		
-		if (pointcutExpression instanceof TypePointcutExpression)
-			return true;
-		
-		if (pointcutExpression instanceof IfPointcutExpression)
 			return true;
 		
 		return false;
 	}
 
 	@Override
-	public RuntimeTransformer getRuntimeTransformer(RuntimePointcutExpression pointcutExpression) {
+	public RuntimeExpressionProvider getRuntimeTransformer(RuntimePointcutExpression pointcutExpression) {
 		if (pointcutExpression instanceof ArgsPointcutExpression)
-			return new RuntimeArgumentsTypeCheck(this);
+			return new RuntimeArgumentsTypeCheck(new NamedTargetExpression(argumentNameParamName));
 		
 		if (pointcutExpression instanceof ThisTypePointcutExpression)
-			return new RuntimeTypeCheck(this, new NamedTargetExpression(calleeName));
-		
+			return new RuntimeTypeCheck(new NamedTargetExpression(calleeName));
+
 		if (pointcutExpression instanceof TargetTypePointcutExpression)
-			return new RuntimeTypeCheck(this, new NamedTargetExpression(objectParamName));
-		
+			return new RuntimeTypeCheck(new NamedTargetExpression(
+					objectParamName));
+
 		if (pointcutExpression instanceof IfPointcutExpression)
-			return new RuntimeIfCheck(this);
-		
+			return new RuntimeIfCheck();
+
 		return null;
 	}
+	
+	@Override
+	public Coordinator<NormalMethod> getCoordinator() {
+		return new MethodCoordinator(this, getJoinpoint());
+	}
+	
 }

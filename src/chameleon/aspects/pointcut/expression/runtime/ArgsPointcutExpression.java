@@ -35,11 +35,6 @@ public class ArgsPointcutExpression<E extends ArgsPointcutExpression<E>> extends
 	}
 
 	@Override
-	public MatchResult matches(Element joinpoint) throws LookupException {
-		return new MatchResult(this, joinpoint);
-	}
-
-	@Override
 	public Set<Class> supportedJoinpoints() {
 		Set<Class> supported = new HashSet<Class>();
 

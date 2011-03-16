@@ -37,12 +37,9 @@ public class AfterReflectiveMethodInvocation extends ReflectiveMethodInvocation 
 	
 	@Override
 	public TryStatement getEnclosingTry(Block tryBody) throws LookupException {
-		// TODO Auto-generated method stub
 		TryStatement enclosingTry = super.getEnclosingTry(tryBody);
 		enclosingTry.setFinallyClause(new FinallyClause(((Block) advice().body()).clone()));
 		
 		return enclosingTry;
 	}
-
-
 }

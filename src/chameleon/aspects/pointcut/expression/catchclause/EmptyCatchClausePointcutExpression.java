@@ -11,7 +11,7 @@ import chameleon.core.statement.Statement;
 import chameleon.support.statement.CatchClause;
 import chameleon.support.statement.EmptyStatement;
 
-public class EmptyCatchClausePointcutExpression<E extends EmptyCatchClausePointcutExpression<E, T>, T extends CatchClause> extends CatchClausePointcutExpression<E, CatchClause> {
+public class EmptyCatchClausePointcutExpression<E extends EmptyCatchClausePointcutExpression<E>> extends CatchClausePointcutExpression<E, CatchClause> {
 
 	@Override
 	public List<? extends Element> children() {
@@ -36,8 +36,12 @@ public class EmptyCatchClausePointcutExpression<E extends EmptyCatchClausePointc
 
 	@Override
 	public E clone() {
-		return (E) new EmptyCatchClausePointcutExpression<E, T>();
+		return (E) new EmptyCatchClausePointcutExpression<E>();
 	}
 
-
+	@Override
+	public MatchResult matchesInverse(CatchClause joinpoint) throws LookupException {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
 }

@@ -10,8 +10,9 @@ import org.rejuse.predicate.SafePredicate;
 
 import chameleon.aspects.Aspect;
 import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.runtimetransformation.RuntimeTransformer;
-import chameleon.aspects.advice.types.translation.ReflectiveAdviceTransformationProvider;
+import chameleon.aspects.advice.runtimetransformation.Coordinator;
+import chameleon.aspects.advice.runtimetransformation.reflectiveinvocation.FieldCoordinator;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.namingRegistry.NamingRegistryFactory;
 import chameleon.aspects.pointcut.expression.MatchResult;
@@ -23,7 +24,6 @@ import chameleon.core.declaration.SimpleNameSignature;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
-import chameleon.core.method.Method;
 import chameleon.core.method.RegularImplementation;
 import chameleon.core.statement.Block;
 import chameleon.core.variable.FormalParameter;
@@ -44,14 +44,13 @@ import chameleon.support.statement.ReturnStatement;
 import chameleon.support.statement.StatementExpression;
 import chameleon.support.variable.LocalVariableDeclarator;
 
-public class AfterReflectiveFieldRead extends ReflectiveAdviceTransformationProvider {
+public class AfterReflectiveFieldRead extends ReflectiveFieldRead {
 
 	
 	public AfterReflectiveFieldRead(MatchResult joinpoint) {
 		super(joinpoint);
 	}
 
-	private final String fieldName = "_$field";
 	private final String retvalName = "_$retval";
 	
 	@Override
@@ -170,6 +169,9 @@ public class AfterReflectiveFieldRead extends ReflectiveAdviceTransformationProv
 		FormalParameter methodName = new FormalParameter(fieldName, new BasicTypeReference("String"));
 		header.addFormalParameter(methodName);
 		
+		FormalParameter callee = new FormalParameter(calleeName, new BasicTypeReference("Object"));
+		header.addFormalParameter(callee);
+		
 		// Get the body
 		Block body = getBody();
 		
@@ -182,12 +184,6 @@ public class AfterReflectiveFieldRead extends ReflectiveAdviceTransformationProv
 		return adviceMethod;
 	}
 	
-	private Advice advice;
-	
-	public Advice advice() {
-		return this.advice;
-	}
-
 	private Block getBody() {
 		Block adviceBody = new Block();
 
@@ -220,28 +216,13 @@ public class AfterReflectiveFieldRead extends ReflectiveAdviceTransformationProv
 		return adviceBody;
 	}
 
-	private RegularMethodInvocation createGetFieldValueInvocation(NamedTarget aspectClassTarget, NamedTargetExpression objectTarget, NamedTargetExpression fieldNameTarget) {
-		RegularMethodInvocation getFieldValueInvocation = new RegularMethodInvocation("getFieldValue", aspectClassTarget);
-		getFieldValueInvocation.addArgument((new BasicTypeArgument(new BasicTypeReference("T"))));
-		
-		getFieldValueInvocation.addArgument(objectTarget);
-		getFieldValueInvocation.addArgument(fieldNameTarget);
-		
-		return getFieldValueInvocation;
-	}
-
 	@Override
 	protected String getReflectiveMethodName() {
 		return "getFieldValue";
 	}
-
+	
 	@Override
-	public boolean canTransform(RuntimePointcutExpression pointcutExpression) {
-		return false;
-	}
-
-	@Override
-	public RuntimeTransformer getRuntimeTransformer(RuntimePointcutExpression pointcutExpression) {
-		return null;
+	public Coordinator<NormalMethod> getCoordinator() {
+		return new FieldCoordinator(this, getJoinpoint());
 	}
 }

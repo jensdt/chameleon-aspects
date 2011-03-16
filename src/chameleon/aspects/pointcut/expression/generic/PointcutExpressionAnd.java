@@ -123,4 +123,14 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T exte
 		
 		return new PointcutExpressionAnd(left, right);
 	}
+
+	@Override
+	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+		MatchResult r1 = expression1().matchesInverse(joinpoint);
+		
+		if (r1.isMatch())
+			return r1;
+		
+		return expression2().matchesInverse(joinpoint);
+	}
 }

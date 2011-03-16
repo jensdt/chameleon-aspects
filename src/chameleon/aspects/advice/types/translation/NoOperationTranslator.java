@@ -1,7 +1,8 @@
 package chameleon.aspects.advice.types.translation;
 
 import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.runtimetransformation.RuntimeTransformer;
+import chameleon.aspects.advice.runtimetransformation.Coordinator;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
 import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
@@ -34,7 +35,12 @@ public class NoOperationTranslator extends AbstractAdviceTransformationProvider<
 	}
 
 	@Override
-	public RuntimeTransformer getRuntimeTransformer(RuntimePointcutExpression pointcutExpression) {
+	public RuntimeExpressionProvider getRuntimeTransformer(RuntimePointcutExpression pointcutExpression) {
+		return null;
+	}
+
+	@Override
+	protected Coordinator<Element> getCoordinator() {
 		return null;
 	}
 

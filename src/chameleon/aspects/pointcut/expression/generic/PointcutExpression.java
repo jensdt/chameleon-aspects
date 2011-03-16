@@ -1,12 +1,9 @@
 package chameleon.aspects.pointcut.expression.generic;
 
-import java.util.List;
 import java.util.Set;
 
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.runtime.IfPointcutExpression;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
@@ -14,6 +11,14 @@ import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.core.variable.FormalParameter;
 
+/**
+ * 	Represents a pointcut expression, a building block for pointcuts
+ * 
+ * 	@author Jens
+ *
+ * 	@param <E>
+ * 	@param <T>
+ */
 public abstract class PointcutExpression<E extends PointcutExpression<E, T>, T extends Element> extends NamespaceElementImpl<E> {
 	/**
 	 * 	Check if this pointcut expression matches the given joinpoint. Note: null (as a pointcutexpression) always matches.
@@ -24,15 +29,36 @@ public abstract class PointcutExpression<E extends PointcutExpression<E, T>, T e
 	 */
 	public abstract MatchResult matches(T joinpoint) throws LookupException;
 
+	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+		MatchResult matches = matches(joinpoint);
+		
+		if (matches.isMatch())
+			return MatchResult.noMatch();
+		else
+			return new MatchResult(this, joinpoint);
+	}
+
+	/**
+	 *  {@inheritDoc}
+	 */
 	@Override
 	public VerificationResult verifySelf() {
 		return Valid.create();
 	}
 	
+	/**
+	 * 	Get the pointcut definition this expression belongs to
+	 * 
+	 * 	@return	The nearest pointcut
+	 */
 	public Pointcut pointcut() {
 		return nearestAncestor(Pointcut.class);
 	}
 	
+	/**
+	 *  {@inheritDoc}
+	 */
+	@Override
 	public abstract E clone();
 
 	/**
@@ -79,21 +105,39 @@ public abstract class PointcutExpression<E extends PointcutExpression<E, T>, T e
 		return false;
 	}
 	
-	public List<? extends RuntimePointcutExpression> getAllRuntimePointcutExpressions() {
-		return descendants(RuntimePointcutExpression.class);
-	}
-	
+	/**
+	 * 	Get this pointcut-expression tree but filter the types to the given type (only instances of the supplied type remain in the tree)
+	 * 
+	 * 	@param 	type
+	 * 			The type to select
+	 * 	@return	The pruned tree
+	 */
 	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
-		if (type.isAssignableFrom(getClass()))
-			return clone();
+		if (type.isAssignableFrom(getClass())) {
+			PointcutExpression clone = clone();
+			clone.setOrigin(origin());
+			
+			return clone;
+		}
 		else
 			return null;
 	}
 
+	/**
+	 * 	Get this pointcut-expression tree but filter the types to any type but the given type (all instances of the supplied type are removed)
+	 * 
+	 * 	@param 	type
+	 * 			The type to exclude
+	 * 	@return	The pruned tree
+	 */
 	public PointcutExpression removeFromTree(Class<? extends PointcutExpression> type) {
 		if (type.isAssignableFrom(getClass()))
 			return null;
-		else
-			return clone();
+		else {
+			PointcutExpression clone = clone();
+			clone.setOrigin(origin());
+			
+			return clone;
+		}
 	}
 }

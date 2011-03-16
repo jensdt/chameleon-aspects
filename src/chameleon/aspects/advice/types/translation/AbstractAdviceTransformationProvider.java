@@ -1,11 +1,9 @@
 package chameleon.aspects.advice.types.translation;
 
-import java.util.List;
-
 import chameleon.aspects.advice.Advice;
+import chameleon.aspects.advice.runtimetransformation.AbstractCoordinator;
 import chameleon.aspects.advice.runtimetransformation.Coordinator;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 
@@ -55,7 +53,8 @@ public abstract class AbstractAdviceTransformationProvider<T extends Element> im
 	public final void start(Advice<?> advice) throws LookupException {
 		T createdElement = transform(advice);
 		
-		Coordinator<T> coordinator = new Coordinator<T>(this, getJoinpoint());
+		//FIXME: place this somewhere else
+		Coordinator<T> coordinator = getCoordinator();
 		coordinator.transform(createdElement);
 //		
 //		List<? extends RuntimePointcutExpression> runtimePces = getJoinpoint().getExpression().getAllRuntimePointcutExpressions();
@@ -66,4 +65,6 @@ public abstract class AbstractAdviceTransformationProvider<T extends Element> im
 		if (next() != null)
 			next.start(advice);
 	}
+
+	protected abstract Coordinator<T> getCoordinator();
 }

@@ -9,7 +9,19 @@ import jnome.core.variable.JavaVariableDeclaration;
 
 import org.rejuse.predicate.SafePredicate;
 
+import chameleon.aspects.advice.runtimetransformation.Coordinator;
+import chameleon.aspects.advice.runtimetransformation.reflectiveinvocation.MethodCoordinator;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeArgumentsTypeCheck;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeIfCheck;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeTypeCheck;
 import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.runtime.ArgsPointcutExpression;
+import chameleon.aspects.pointcut.expression.runtime.IfPointcutExpression;
+import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
+import chameleon.aspects.pointcut.expression.runtime.TargetTypePointcutExpression;
+import chameleon.aspects.pointcut.expression.runtime.ThisTypePointcutExpression;
+import chameleon.aspects.pointcut.expression.runtime.TypePointcutExpression;
 import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.declaration.DeclarationWithParametersHeader;
 import chameleon.core.declaration.SimpleNameDeclarationWithParametersHeader;
@@ -217,7 +229,8 @@ public abstract class ReflectiveAdviceTransformationProvider extends AbstractAdv
 	protected abstract Block getReflectivePublicCall();
 	protected abstract Block getReflectivePrivateCall();
 	
-	protected final String objectParamName = "_$object";
+	public final String objectParamName = "_$object";
+	public final String calleeName = "_$callee";
 	
 	protected Block getReflectiveMethodBodyInitialisation() {
 		Block initialisation = new Block();
@@ -269,4 +282,31 @@ public abstract class ReflectiveAdviceTransformationProvider extends AbstractAdv
 		// Add the method
 		aspectClass.add(method);
 	}
+	@Override
+	public boolean canTransform(RuntimePointcutExpression pointcutExpression) {
+		if (pointcutExpression instanceof TypePointcutExpression)
+			return true;
+		
+		if (pointcutExpression instanceof IfPointcutExpression)
+			return true;
+		
+		return false;
+	}
+
+	@Override
+	public RuntimeExpressionProvider getRuntimeTransformer(RuntimePointcutExpression pointcutExpression) {		
+		if (pointcutExpression instanceof ThisTypePointcutExpression)
+			return new RuntimeTypeCheck(new NamedTargetExpression(calleeName));
+		
+		if (pointcutExpression instanceof TargetTypePointcutExpression)
+			return new RuntimeTypeCheck(new NamedTargetExpression(objectParamName));
+		
+		if (pointcutExpression instanceof IfPointcutExpression)
+			return new RuntimeIfCheck();
+		
+		return null;
+	}
+	
+	@Override
+	protected abstract Coordinator<NormalMethod> getCoordinator();
 }
