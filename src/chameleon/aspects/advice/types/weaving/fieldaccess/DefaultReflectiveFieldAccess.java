@@ -42,7 +42,7 @@ public class DefaultReflectiveFieldAccess extends ReflectiveProvider<NamedTarget
 		parameters.add(new VariableReference("object", target));
 		parameters.add(new RegularLiteral(new BasicTypeReference("String"), "\"" + joinpoint.getJoinpoint().signature().name()+ "\""));
 
-		Literal self = getSelf(joinpoint);
+		Expression self = getSelf(joinpoint);
 		
 		parameters.add(self);
 		

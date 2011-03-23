@@ -8,14 +8,14 @@ import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.variable.FormalParameter;
 
-public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T extends Element> extends PointcutExpressionDual<E, T> {
+public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E>> extends PointcutExpressionDual<E> {
 
 	public PointcutExpressionAnd(PointcutExpression expression1, PointcutExpression expression2) {
 		super(expression1, expression2);
 	}
 
 	@Override
-	public MatchResult matches(T joinpoint) throws LookupException {
+	public MatchResult matches(Element joinpoint) throws LookupException {
 		MatchResult r1 = expression1().matches(joinpoint);
 		MatchResult r2 = expression2().matches(joinpoint);
 		
@@ -27,7 +27,7 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T exte
 
 	@Override
 	public E clone() {
-		return (E) new PointcutExpressionAnd<E, T>(expression1().clone(), expression2().clone());
+		return (E) new PointcutExpressionAnd<E>(expression1().clone(), expression2().clone());
 	}
 
 	/**
@@ -71,28 +71,6 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T exte
 		
 		return supportedJoinpoints;
 	}
-
-	/**
-	 * 	{@inheritDoc}
-	 * 
-	 */
-	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		return expression1().hasParameter(fp) || expression2().hasParameter(fp);
-	}
-
-	/**
-	 * 	{@inheritDoc}
-	 */
-	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		int index = expression1().indexOfParameter(fp);
-		
-		if (index != -1)
-			return index;
-		
-		return expression2().indexOfParameter(fp);
-	}
 	
 	@Override
 	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
@@ -125,12 +103,19 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E, T>, T exte
 	}
 
 	@Override
-	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
 		MatchResult r1 = expression1().matchesInverse(joinpoint);
 		
 		if (r1.isMatch())
 			return r1;
 		
 		return expression2().matchesInverse(joinpoint);
+	}
+	
+	/**
+	 * 	{@inheritDoc}
+	 */
+	public boolean hasParameter(FormalParameter fp) {
+		return expression1().hasParameter(fp) || expression2().hasParameter(fp);
 	}
 }

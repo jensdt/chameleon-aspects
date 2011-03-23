@@ -1,18 +1,19 @@
 package chameleon.aspects.pointcut.expression.runtime;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.rejuse.association.OrderedMultiAssociation;
 
-import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.variable.FormalParameter;
 
-public class ArgsPointcutExpression<E extends ArgsPointcutExpression<E>> extends RuntimePointcutExpression<E> {
+public class ArgsPointcutExpression<E extends ArgsPointcutExpression<E>> extends RuntimePointcutExpression<E> implements ParameterExposurePointcutExpression {
 	
 	private OrderedMultiAssociation<ArgsPointcutExpression<E>, NamedTargetExpression> _parameters = new OrderedMultiAssociation<ArgsPointcutExpression<E>, NamedTargetExpression>(this);
 	
@@ -60,13 +61,19 @@ public class ArgsPointcutExpression<E extends ArgsPointcutExpression<E>> extends
 	@Override
 	public int indexOfParameter(FormalParameter fp) {
 		if (parameters() == null)
-			return -1;
-		
+			return -1;	
 		
 		for (int i = 0; i < parameters().size(); i++) {
 			try {
-				if (parameters().get(i).getElement() == fp)
-					return i;
+				// FIXME: this is temporary - when a named pointcut is a pointcut expression, this should revert
+//				if (parameters().get(i).getElement() == fp)
+//					return i;
+				if (parameters().get(i).getElement() instanceof FormalParameter) {
+					FormalParameter param = (FormalParameter) parameters().get(i).getElement();
+					
+					if (param.signature().name().equals(fp.signature().name()) && param.getType().sameAs(fp.getType()))
+						return i;
+				}
 			} catch (LookupException e) {
 				// Ignore
 			}
@@ -74,5 +81,4 @@ public class ArgsPointcutExpression<E extends ArgsPointcutExpression<E>> extends
 		
 		return -1;
 	}
-
 }

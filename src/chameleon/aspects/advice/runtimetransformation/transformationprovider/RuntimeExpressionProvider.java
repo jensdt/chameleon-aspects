@@ -1,6 +1,6 @@
 package chameleon.aspects.advice.runtimetransformation.transformationprovider;
 
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.expression.Expression;
 
 /**

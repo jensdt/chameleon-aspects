@@ -11,7 +11,7 @@ import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.VerificationResult;
 
 
-public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingle<E, T>, T extends Element> extends PointcutExpression<E, T> {
+public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingle<E>> extends PointcutExpression<E> {
 	private SingleAssociation<PointcutExpressionSingle, PointcutExpression> _expression = new SingleAssociation<PointcutExpressionSingle, PointcutExpression>(this);;
 
 	public PointcutExpressionSingle(PointcutExpression expression) {

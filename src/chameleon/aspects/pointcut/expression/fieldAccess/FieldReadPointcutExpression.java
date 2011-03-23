@@ -1,5 +1,6 @@
 package chameleon.aspects.pointcut.expression.fieldAccess;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -7,45 +8,96 @@ import java.util.Set;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
+import chameleon.aspects.pointcut.expression.generic.StaticPointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.variable.FormalParameter;
 import chameleon.core.variable.RegularMemberVariable;
 import chameleon.oo.type.RegularType;
+import chameleon.oo.type.TypeReference;
 import chameleon.support.expression.AssignmentExpression;
-import chameleon.support.expression.ThisLiteral;
-import chameleon.support.member.simplename.variable.MemberVariableDeclarator;
 import chameleon.util.Util;
 
-public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E, T>, T extends NamedTargetExpression> extends PointcutExpression<E,T>  {
+public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E>> extends StaticPointcutExpression<E>  {
 
-	public FieldReadPointcutExpression(FieldReference reference) {
+	public FieldReadPointcutExpression(TypeReference typeReference, FieldReference reference) {
 		setFieldReference(reference);
+		setTypeReference(typeReference);
 	}
 	
+	private void setTypeReference(TypeReference typeReference) {
+		setAsParent(_typeReference, typeReference);
+	}
+
 	private void setFieldReference(FieldReference reference) {
 		setAsParent(_fieldReference, reference);
 	}
 
-	private SingleAssociation<FieldReadPointcutExpression<E, T>, FieldReference> _fieldReference = new SingleAssociation<FieldReadPointcutExpression<E, T>, FieldReference>(this);
+	private SingleAssociation<FieldReadPointcutExpression<E>, FieldReference> _fieldReference = new SingleAssociation<FieldReadPointcutExpression<E>, FieldReference>(this);
+	private SingleAssociation<FieldReadPointcutExpression<E>, TypeReference> _typeReference = new SingleAssociation<FieldReadPointcutExpression<E>, TypeReference>(this);
 	
 	public FieldReference fieldReference() {
 		return _fieldReference.getOtherEnd();
 	}
 	
-	@Override
-	public List<? extends Element> children() {
-		return Util.createNonNullList(fieldReference());
+	public TypeReference typeReference() {
+		return _typeReference.getOtherEnd();
 	}
 
+	
 	@Override
-	public MatchResult matches(T joinpoint) throws LookupException {
+	public List<? extends Element> children() {
+		List<Element> result = new ArrayList<Element>();
+		
+		Util.addNonNull(fieldReference(), result);
+		Util.addNonNull(typeReference(), result);
+		
+		return result;
+	}
+
+	/**
+	 * 	{@inheritDoc}
+	 * 
+	 * 	Matching works as follows (consistent with AspectJ):
+	 * 
+	 * 	The field must be declared in the type referenced by the signature, or a sub type. If it is re-defined in a sub type, it isn't matched.
+	 * 
+	 * 	E.g.
+	 * 
+	 * 	Class A : int foo
+	 * 	Class B extends A
+	 * 
+	 *  get(A.foo) matches both a.foo and b.foo
+	 *  
+	 *  Class A : int foo
+	 * 	Class B extends A : int foo
+	 * 
+	 *  get(A.foo) only matches a.foo
+	 *  
+	 *  But:
+	 *  
+	 *  Class A : int foo
+	 * 	Class B extends A
+	 * 
+	 *  get(B.foo) doesn't match a.foo OR b.foo
+	 */
+	@Override
+	public MatchResult matches(Element element) throws LookupException {
+		if (!(element instanceof NamedTargetExpression))
+			return MatchResult.noMatch();
+		
+		NamedTargetExpression joinpoint = (NamedTargetExpression) element;
+		
 		if (!(joinpoint.getElement() instanceof RegularMemberVariable))
 			return MatchResult.noMatch();
 		
-		if (joinpoint.parent() instanceof AssignmentExpression)
+		if (joinpoint.parent() instanceof AssignmentExpression && ((AssignmentExpression) joinpoint.parent()).getVariable().sameAs(joinpoint))
+				return MatchResult.noMatch();
+		
+		
+		// Typecheck: no inheritance (as AspectJ does it)
+		if (!joinpoint.getType().sameAs(typeReference().getType()))
 			return MatchResult.noMatch();
 		
 		// Get the fully qualified name of this field
@@ -59,17 +111,16 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 
 	@Override
 	public E clone() {
-		return (E) new FieldReadPointcutExpression(fieldReference().clone());
-	}
-
-	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		return false;
-	}
-
-	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		return -1;
+		FieldReference fieldRefClone = null;
+		TypeReference typeRefClone = null;
+		
+		if (fieldReference() != null)
+			fieldRefClone = fieldReference().clone();
+		
+		if (typeReference() != null)
+			typeRefClone = typeReference().clone();
+		
+		return (E) new FieldReadPointcutExpression(typeRefClone, fieldRefClone);
 	}
 
 	@Override
@@ -78,7 +129,7 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 	}
 
 	@Override
-	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not yet implemented");
 	}

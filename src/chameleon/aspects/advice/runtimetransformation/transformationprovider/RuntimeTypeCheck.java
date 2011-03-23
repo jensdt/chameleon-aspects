@@ -1,17 +1,21 @@
 package chameleon.aspects.advice.runtimetransformation.transformationprovider;
 
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
+import jnome.core.expression.ClassLiteral;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.TypePointcutExpression;
 import chameleon.core.expression.Expression;
-import chameleon.core.expression.NamedTargetExpression;
-import chameleon.support.expression.InstanceofExpression;
+import chameleon.support.member.simplename.method.RegularMethodInvocation;
 
 public class RuntimeTypeCheck implements RuntimeExpressionProvider  {
 
-	private NamedTargetExpression thisReference;
+	private Expression reference;
 	
-	public RuntimeTypeCheck(NamedTargetExpression thisReference) {
-		this.thisReference = thisReference;
+	public RuntimeTypeCheck(Expression reference) {
+		this.reference = reference;
+	}
+	
+	protected Expression getReference() {
+		return reference;
 	}
 
 	@Override
@@ -21,6 +25,13 @@ public class RuntimeTypeCheck implements RuntimeExpressionProvider  {
 		
 		TypePointcutExpression<?> thisType = (TypePointcutExpression<?>) expr;
 		
-		return new InstanceofExpression(thisReference.clone(), thisType.getType());
+		// Declared must be a super type of the given
+		ClassLiteral getDeclaredClass = new ClassLiteral(thisType.getType());
+		RegularMethodInvocation getGivenClass = new RegularMethodInvocation("getClass", getReference());
+		
+		RegularMethodInvocation test = new RegularMethodInvocation("isAssignableFrom", getDeclaredClass);
+		test.addArgument(getGivenClass);
+		
+		return test;
 	}
 }

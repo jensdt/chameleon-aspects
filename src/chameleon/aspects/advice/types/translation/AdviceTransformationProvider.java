@@ -1,9 +1,8 @@
 package chameleon.aspects.advice.types.translation;
 
 import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
+import chameleon.aspects.advice.runtimetransformation.RuntimeTransformationProvider;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 
@@ -17,7 +16,7 @@ import chameleon.core.lookup.LookupException;
  * 	@author Jens
  *
  */
-public interface AdviceTransformationProvider<T extends Element> {
+public interface AdviceTransformationProvider<T extends Element> extends RuntimeTransformationProvider {
 	/**
 	 * 	Transform the given advice
 	 * 
@@ -54,7 +53,4 @@ public interface AdviceTransformationProvider<T extends Element> {
 	
 	public MatchResult getJoinpoint();
 	
-	public boolean canTransform(RuntimePointcutExpression pointcutExpression);
-	public RuntimeExpressionProvider getRuntimeTransformer(RuntimePointcutExpression pointcutExpression);
-	 
 }

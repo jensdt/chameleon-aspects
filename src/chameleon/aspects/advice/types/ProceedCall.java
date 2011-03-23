@@ -44,7 +44,7 @@ public class ProceedCall extends Expression {
 		Advice parentAdvice = (Advice) nearestAncestor(Advice.class);
 			
 		if (parentAdvice != null)
-			return parentAdvice.returnType().getType();
+			return parentAdvice.actualReturnType().getType();
 		
 		return null;
 	}

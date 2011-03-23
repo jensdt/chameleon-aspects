@@ -37,7 +37,6 @@ public abstract class ReflectiveProvider<T extends TargetedExpression> implement
 			adviceInvocation.addArgument(e);
 		
 		BasicTypeArgument genericParameter = getGenericParameter(advice, joinpoint);
-		
 		if (genericParameter != null)
 			adviceInvocation.addArgument(genericParameter);
 		
@@ -63,7 +62,7 @@ public abstract class ReflectiveProvider<T extends TargetedExpression> implement
 		return target;
 	}
 	
-	protected Literal getSelf(MatchResult<? extends PointcutExpression, ? extends T> joinpoint) {
+	protected Expression getSelf(MatchResult<? extends PointcutExpression, ? extends T> joinpoint) {
 		// Note, we can not use 'ElementWithModifier', e.g. in this scenario: static void foo() { final int i = p.a; } would match the local variable 
 		Element currentElement = joinpoint.getJoinpoint();
 		boolean found = false;
@@ -79,11 +78,11 @@ public abstract class ReflectiveProvider<T extends TargetedExpression> implement
 			}
 		}
 		
-		Literal self;
+		Expression self;
 		if (isStatic)
 			self = new NullLiteral();
 		else
-			self = new ThisLiteral();
+			self = new ThisLiteral(); // new RegularMethodInvocation("getClass", null);
 		
 		return self;
 	}

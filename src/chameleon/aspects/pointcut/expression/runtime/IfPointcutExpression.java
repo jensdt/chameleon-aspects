@@ -7,10 +7,14 @@ import java.util.Set;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
 import chameleon.core.lookup.LookupException;
+import chameleon.core.validation.BasicProblem;
+import chameleon.core.validation.VerificationResult;
 import chameleon.core.variable.FormalParameter;
+import chameleon.oo.language.ObjectOrientedLanguage;
 import chameleon.util.Util;
 
 public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends RuntimePointcutExpression<E> {
@@ -44,16 +48,6 @@ public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends Run
 	}
 
 	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		return false;
-	}
-
-	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		return -1;
-	}
-
-	@Override
 	public Set<Class> supportedJoinpoints() {
 		Set<Class> resultList = new HashSet<Class>();
 		
@@ -62,4 +56,20 @@ public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends Run
 		return resultList;
 	}
 
+	@Override
+	public VerificationResult verifySelf() {
+		VerificationResult result = super.verifySelf();
+		
+		try {
+			if (!expression().getType().sameAs(language(ObjectOrientedLanguage.class).booleanType()))
+				result = result.and(new BasicProblem(this, "An if-expression may only contain boolean expressions"));
+		} catch (LookupException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return result;
+	}
+
+	
 }

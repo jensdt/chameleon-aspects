@@ -1,6 +1,7 @@
 package chameleon.aspects.pointcut.expression.generic;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.rejuse.association.SingleAssociation;
@@ -10,7 +11,7 @@ import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.VerificationResult;
 
 
-public abstract class PointcutExpressionDual<E extends PointcutExpressionDual<E, T>, T extends Element> extends PointcutExpression<E, T> {
+public abstract class PointcutExpressionDual<E extends PointcutExpressionDual<E>> extends PointcutExpression<E> {
 	
 	private SingleAssociation<PointcutExpressionDual, PointcutExpression> _expression1 = new SingleAssociation<PointcutExpressionDual, PointcutExpression>(this);
 	private SingleAssociation<PointcutExpressionDual, PointcutExpression> _expression2 = new SingleAssociation<PointcutExpressionDual, PointcutExpression>(this);
@@ -59,6 +60,14 @@ public abstract class PointcutExpressionDual<E extends PointcutExpressionDual<E,
 		
 		if (expression2() == null)
 			result.and(new BasicProblem(this, "The second expression of this dual expression cannot be null."));
+		
+		return result;
+	}
+	
+	public List<? extends PointcutExpression<?>> asList() {
+		List<PointcutExpression<?>> result = new ArrayList<PointcutExpression<?>>();
+		result.addAll(expression1().asList());
+		result.addAll(expression2().asList());
 		
 		return result;
 	}

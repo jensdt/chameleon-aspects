@@ -64,21 +64,7 @@ public class DefaultReflectiveMethodInvocation extends ReflectiveProvider<Method
 		
 		parameters.add(parameterArray);
 		
-		ArrayCreationExpression indexArray = new ArrayCreationExpression(new ArrayTypeReference(new BasicJavaTypeReference("int")));
-		ArrayInitializer indexInitializer = new ArrayInitializer();
-		
-		Pointcut pc = advice.pointcut();
-		for (FormalParameter param : (List<FormalParameter>) pc.header().formalParameters()) {
-			// Find the index of the parameter with the same name as 'param' in the matched pointcut ref
-			int index = joinpoint.getExpression().indexOfParameter(param);
-			
-			indexInitializer.addInitializer(new RegularLiteral(new BasicJavaTypeReference("int"), Integer.toString(index)));
-		}
-		
-		indexArray.setInitializer(indexInitializer);
-		parameters.add(indexArray);	
-		
-		Literal self = getSelf(joinpoint);
+		Expression self = getSelf(joinpoint);
 		
 		parameters.add(self);
 		

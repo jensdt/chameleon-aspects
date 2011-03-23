@@ -1,22 +1,18 @@
-package chameleon.aspects.advice.types.translation.fieldaccess;
+package chameleon.aspects.advice.types.translation.reflection.fieldaccess;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jnome.core.type.BasicJavaTypeReference;
 import jnome.core.variable.JavaVariableDeclaration;
-
-import org.rejuse.predicate.SafePredicate;
-
 import chameleon.aspects.Aspect;
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.runtimetransformation.Coordinator;
 import chameleon.aspects.advice.runtimetransformation.reflectiveinvocation.FieldCoordinator;
-import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
+import chameleon.aspects.advice.types.translation.reflection.ReflectiveAdviceTransformationProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.namingRegistry.NamingRegistryFactory;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.declaration.DeclarationWithParametersHeader;
 import chameleon.core.declaration.SimpleNameDeclarationWithParametersHeader;
@@ -27,7 +23,6 @@ import chameleon.core.lookup.LookupException;
 import chameleon.core.method.RegularImplementation;
 import chameleon.core.statement.Block;
 import chameleon.core.variable.FormalParameter;
-import chameleon.core.variable.VariableDeclaration;
 import chameleon.oo.type.BasicTypeReference;
 import chameleon.oo.type.RegularType;
 import chameleon.oo.type.TypeReference;
@@ -42,23 +37,24 @@ import chameleon.support.modifier.Static;
 import chameleon.support.statement.CatchClause;
 import chameleon.support.statement.ReturnStatement;
 import chameleon.support.statement.StatementExpression;
+import chameleon.support.variable.LocalVariable;
 import chameleon.support.variable.LocalVariableDeclarator;
 
-public class AfterReflectiveFieldRead extends ReflectiveFieldRead {
+public abstract class ReflectiveFieldRead extends ReflectiveAdviceTransformationProvider {
 
-	
-	public AfterReflectiveFieldRead(MatchResult joinpoint) {
+	public ReflectiveFieldRead(MatchResult<?, ?> joinpoint) {
 		super(joinpoint);
 	}
-
-	private final String retvalName = "_$retval";
+	
+	public final String fieldName = "_$field";
+	public final String retvalName = "_$retval";
 	
 	@Override
 	protected List<FormalParameter> getReflectiveMethodParameters() {
 		List<FormalParameter> resultList = new ArrayList<FormalParameter>();
 		
-		resultList.add(new FormalParameter(objectParamName, new BasicTypeReference("Object")));
-		resultList.add(new FormalParameter(fieldName, new BasicTypeReference("String")));
+		resultList.add(new FormalParameter(objectParamName, new BasicTypeReference<BasicTypeReference<?>>("Object")));
+		resultList.add(new FormalParameter(fieldName, new BasicTypeReference<BasicTypeReference<?>>("String")));
 		
 		return resultList;
 	}
@@ -69,9 +65,9 @@ public class AfterReflectiveFieldRead extends ReflectiveFieldRead {
 		
 		// java.lang.reflect.Field f = invocationClass.getField(fieldName);
 		LocalVariableDeclarator field = new LocalVariableDeclarator(new BasicJavaTypeReference("java.lang.reflect.Field"));
-		JavaVariableDeclaration fieldDecl = new JavaVariableDeclaration("f");
+		JavaVariableDeclaration<LocalVariable> fieldDecl = new JavaVariableDeclaration<LocalVariable>("f");
 		
-		RegularMethodInvocation getMethod = new RegularMethodInvocation("getField", new NamedTargetExpression("invocationClass"));
+		RegularMethodInvocation<?> getMethod = new RegularMethodInvocation("getField", new NamedTargetExpression("invocationClass"));
 		getMethod.addArgument(new NamedTargetExpression(fieldName));
 		
 		fieldDecl.setInitialization(getMethod);
@@ -80,7 +76,7 @@ public class AfterReflectiveFieldRead extends ReflectiveFieldRead {
 		publicCall.addStatement(field);
 		
 		// return (T) f.get(_object);
-		RegularMethodInvocation methodInvocation = new RegularMethodInvocation("get", new NamedTarget("f"));
+		RegularMethodInvocation<?> methodInvocation = new RegularMethodInvocation("get", new NamedTarget("f"));
 		methodInvocation.addArgument(new NamedTargetExpression(objectParamName));
 		ReturnStatement returnStatement = new ReturnStatement(new ClassCastExpression(new BasicTypeReference("T"), methodInvocation));
 		
@@ -126,6 +122,24 @@ public class AfterReflectiveFieldRead extends ReflectiveFieldRead {
 		return new CatchClause(new FormalParameter("nsm", new BasicTypeReference("NoSuchFieldException")), new Block());
 	}
 	
+	public RegularMethodInvocation createGetFieldValueInvocation(NamedTarget aspectClassTarget, NamedTargetExpression objectTarget, NamedTargetExpression fieldNameTarget) {
+		RegularMethodInvocation getInstance = new RegularMethodInvocation("instance", aspectClassTarget);
+		RegularMethodInvocation getFieldValueInvocation = new RegularMethodInvocation("getFieldValue", getInstance);
+		getFieldValueInvocation.addArgument((new BasicTypeArgument(new BasicTypeReference("T"))));
+		
+		getFieldValueInvocation.addArgument(objectTarget);
+		getFieldValueInvocation.addArgument(fieldNameTarget);
+		
+		return getFieldValueInvocation;
+	}
+	
+	@Override
+	public String getAdviceMethodName(Advice advice) {
+		NamingRegistry<Advice> adviceNamingRegistry = NamingRegistryFactory.instance().getNamingRegistryFor("advice");
+		
+		return "advice_" + adviceNamingRegistry.getName(advice);
+	}
+	
 	@Override
 	public NormalMethod transform(Advice<?> advice) throws LookupException {
 		this.advice = advice;
@@ -135,22 +149,11 @@ public class AfterReflectiveFieldRead extends ReflectiveFieldRead {
 		// Get the class we are going to create this method in
 		RegularType aspectClass = getOrCreateAspectClass(compilationUnit, aspect.name());
 		
-		// Get the naming registries
-		NamingRegistry<Advice> adviceNamingRegistry = NamingRegistryFactory.instance().getNamingRegistryFor("advice");
-		
-		final String adviceMethodName = "advice_" + adviceNamingRegistry.getName(advice);
-		
-		// Check if this method has already been defined (which is possible, if a joinpoint to the same method is found multiple times)
-		// FIXME: refactor
-		List<NormalMethod> definedMethods = compilationUnit.descendants(NormalMethod.class, new SafePredicate<NormalMethod>() {
-			@Override
-			public boolean eval(NormalMethod object) {
-				return object.name().equals(adviceMethodName);
-			}
-		});
-		
-		if (!definedMethods.isEmpty())
+		// Check if the method has already been created
+		if (isAlreadyDefined(advice, compilationUnit))
 			return null;
+		
+		String adviceMethodName = getAdviceMethodName(advice);
 		
 		DeclarationWithParametersHeader header = new SimpleNameDeclarationWithParametersHeader(adviceMethodName);
 		
@@ -184,38 +187,14 @@ public class AfterReflectiveFieldRead extends ReflectiveFieldRead {
 		return adviceMethod;
 	}
 	
-	private Block getBody() {
-		Block adviceBody = new Block();
+	protected abstract Block getBody();
 
-		/*
-		 *	Create the proceed call
-		 */
-		RegularMethodInvocation getValueInvocation = createGetFieldValueInvocation(new NamedTarget(advice().aspect().name()), new NamedTargetExpression(objectParamName), new NamedTargetExpression(fieldName));
-
-		/*
-		 *	Add the proceed-invocation, assign it to a local variable 
-		 */
-		LocalVariableDeclarator returnVal = new LocalVariableDeclarator(new BasicTypeReference("T"));
-		
-		VariableDeclaration returnValDecl = new VariableDeclaration(retvalName);
-		returnValDecl.setInitialization(getValueInvocation);
-		returnVal.add(returnValDecl);
+	protected Advice<?> advice;
 	
-		adviceBody.addStatement(returnVal);
-		
-		/*
-		 *	Add the advice-body itself 
-		 */
-		adviceBody.addBlock(((Block) advice().body()).clone());
-		
-		/*
-		 * 	Add the return statement
-		 */
-		adviceBody.addStatement(new ReturnStatement(new NamedTargetExpression(retvalName)));
-		
-		return adviceBody;
+	public Advice<?> advice() {
+		return this.advice;
 	}
-
+	
 	@Override
 	protected String getReflectiveMethodName() {
 		return "getFieldValue";

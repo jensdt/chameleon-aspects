@@ -53,9 +53,10 @@ public abstract class AbstractAdviceTransformationProvider<T extends Element> im
 	public final void start(Advice<?> advice) throws LookupException {
 		T createdElement = transform(advice);
 		
-		//FIXME: place this somewhere else
+		//FIXME: place this somewhere else... maybe
 		Coordinator<T> coordinator = getCoordinator();
-		coordinator.transform(createdElement);
+		if (coordinator != null)
+			coordinator.transform(createdElement, advice.formalParameters());
 //		
 //		List<? extends RuntimePointcutExpression> runtimePces = getJoinpoint().getExpression().getAllRuntimePointcutExpressions();
 //		for (RuntimePointcutExpression expr : runtimePces)

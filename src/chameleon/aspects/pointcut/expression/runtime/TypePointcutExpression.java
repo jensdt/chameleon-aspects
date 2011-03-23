@@ -7,6 +7,7 @@ import java.util.Set;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
@@ -40,16 +41,6 @@ public abstract class TypePointcutExpression<E extends TypePointcutExpression<E>
 		return null;
 	}
 	
-	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		return false;
-	}
-
-	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		return -1;
-	}
-
 	@Override
 	public Set<Class> supportedJoinpoints() {
 		Set<Class> supported = new HashSet<Class>();

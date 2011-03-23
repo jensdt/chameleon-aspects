@@ -3,26 +3,23 @@ package chameleon.aspects.advice.runtimetransformation.reflectiveinvocation;
 import java.util.List;
 
 import chameleon.aspects.advice.runtimetransformation.AbstractCoordinator;
-import chameleon.aspects.advice.types.translation.fieldaccess.ReflectiveFieldRead;
+import chameleon.aspects.advice.types.translation.reflection.fieldaccess.ReflectiveFieldRead;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
-import chameleon.core.expression.Expression;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.expression.MethodInvocation;
 import chameleon.core.expression.NamedTarget;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.method.RegularImplementation;
 import chameleon.core.statement.Block;
-import chameleon.core.statement.Statement;
+import chameleon.core.variable.FormalParameter;
 import chameleon.support.member.simplename.method.NormalMethod;
 import chameleon.support.member.simplename.method.RegularMethodInvocation;
-import chameleon.support.member.simplename.operator.prefix.PrefixOperatorInvocation;
-import chameleon.support.statement.IfThenElseStatement;
 import chameleon.support.statement.ReturnStatement;
 
 /**
- * 	The coordinator for method invocations. Implements a single-phased transformation phase.
+ * 	The coordinator for field reads. Implements a single-phased transformation phase (since there are no arguments).
  * 
  * 	@author Jens
  */
@@ -39,7 +36,7 @@ public class FieldCoordinator extends AbstractCoordinator<NormalMethod> {
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public void transform(NormalMethod element) {
+	public void transform(NormalMethod element, List<FormalParameter> parameters) {
 		if (element == null)
 			return;
 		

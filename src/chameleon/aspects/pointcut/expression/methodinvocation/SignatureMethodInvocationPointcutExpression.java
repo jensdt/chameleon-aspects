@@ -21,7 +21,7 @@ import chameleon.oo.type.Type;
 import chameleon.oo.type.TypeReference;
 import chameleon.util.Util;
 
-public class SignatureMethodInvocationPointcutExpression<E extends SignatureMethodInvocationPointcutExpression<E, T>, T extends MethodInvocation> extends MethodInvocationPointcutExpression<E, T> {
+public class SignatureMethodInvocationPointcutExpression<E extends SignatureMethodInvocationPointcutExpression<E>> extends MethodInvocationPointcutExpression<E> {
 	private SingleAssociation<SignatureMethodInvocationPointcutExpression, MethodReference> _methodReference = new SingleAssociation<SignatureMethodInvocationPointcutExpression, MethodReference>(this);
 	
 	public SignatureMethodInvocationPointcutExpression(MethodReference methodReference) {
@@ -37,7 +37,12 @@ public class SignatureMethodInvocationPointcutExpression<E extends SignatureMeth
 	}
 
 	@Override
-	public MatchResult matches(T joinpoint) throws LookupException {
+	public MatchResult matches(Element element) throws LookupException {
+		if (!(element instanceof MethodInvocation))
+			return MatchResult.noMatch();
+		
+		MethodInvocation joinpoint = (MethodInvocation) element;
+		
 		Method e = joinpoint.getElement();
 
 		// Check if the returntype matches
@@ -161,11 +166,11 @@ public class SignatureMethodInvocationPointcutExpression<E extends SignatureMeth
 
 	@Override
 	public E clone() {
-		return (E) new SignatureMethodInvocationPointcutExpression<E, T>(methodReference().clone()); 
+		return (E) new SignatureMethodInvocationPointcutExpression<E>(methodReference().clone()); 
 	}
 
 	@Override
-	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
 		return super.matchesInverse(joinpoint);
 	}	
 }

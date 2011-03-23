@@ -4,8 +4,8 @@ import java.util.List;
 
 import jnome.core.expression.ArrayAccessExpression;
 import jnome.core.language.Java;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.ArgsPointcutExpression;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.core.expression.Expression;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
@@ -42,6 +42,15 @@ public class RuntimeArgumentsTypeCheck implements RuntimeExpressionProvider {
 	}
 	
 	/**
+	 * 	Return the parameter containing the arguments
+	 * 
+	 * 	@return	The parameter
+	 */
+	public NamedTargetExpression getArgumentReference() {
+		return argumentReference;
+	}
+	
+	/**
 	 *  {@inheritDoc}
 	 *  
 	 *  The expression is always of the following form: first a check for the correct count (so we get short-circuited if this isn't correct and avoid an IndexOutOfBounds).
@@ -73,16 +82,7 @@ public class RuntimeArgumentsTypeCheck implements RuntimeExpressionProvider {
 			ArrayAccessExpression arrayAccess = new ArrayAccessExpression(argumentReference.clone());
 			arrayAccess.addIndex(new FilledArrayIndex(new RegularLiteral(new BasicTypeReference<BasicTypeReference<?>>("int"), Integer.toString(i++))));
 
-			TypeReference<?> typeToTest = null;
-			Java java = parameter.language(Java.class);
-			try {
-				if (parameter.getType().isTrue(java.property("primitive")))
-					typeToTest = new BasicTypeReference<BasicTypeReference<?>>(java.box(parameter.getType()).getFullyQualifiedName());
-				else
-					typeToTest = new BasicTypeReference<BasicTypeReference<?>>(parameter.getType().getFullyQualifiedName());
-			} catch (LookupException e) {
-				System.out.println("Lookupexception while boxing");
-			}
+			TypeReference<?> typeToTest = getTypeToTest(parameter);
 			
 			// Create the instanceof
 			InstanceofExpression test = new InstanceofExpression(arrayAccess, typeToTest);
@@ -92,5 +92,23 @@ public class RuntimeArgumentsTypeCheck implements RuntimeExpressionProvider {
 		}
 		
 		return fullTest;
+	}
+	
+	/**
+	 * 	Get the type for which to check. If the type is a primitive, we check for its boxed type (since 'a instanceof int' is illegal)
+	 */
+	protected TypeReference getTypeToTest(NamedTargetExpression parameter) {
+		TypeReference<?> typeToTest = null;
+		Java java = parameter.language(Java.class);
+		try {
+			if (parameter.getType().isTrue(java.property("primitive")))
+				typeToTest = new BasicTypeReference<BasicTypeReference<?>>(java.box(parameter.getType()).getFullyQualifiedName());
+			else
+				typeToTest = new BasicTypeReference<BasicTypeReference<?>>(parameter.getType().getFullyQualifiedName());
+		} catch (LookupException e) {
+			System.out.println("Lookupexception while boxing");
+		}
+		
+		return typeToTest;
 	}
 }

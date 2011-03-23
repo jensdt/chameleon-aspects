@@ -11,7 +11,7 @@ import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpressionAnd;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpressionNot;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpressionOr;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
 import chameleon.core.expression.NamedTargetExpression;
@@ -22,7 +22,6 @@ import chameleon.oo.type.BasicTypeReference;
 import chameleon.support.member.simplename.operator.infix.InfixOperatorInvocation;
 import chameleon.support.member.simplename.operator.prefix.PrefixOperatorInvocation;
 import chameleon.support.statement.IfThenElseStatement;
-import chameleon.support.statement.ReturnStatement;
 import chameleon.support.variable.LocalVariableDeclarator;
 
 /**
@@ -36,8 +35,10 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 
 	/**
 	 * 	The advice transformer used
+	 * 
+	 * 	FIXME: changed this type, rename the variables/getter/setter
 	 */
-	private AdviceTransformationProvider<?> adviceTransformationProvider;
+	private RuntimeTransformationProvider adviceTransformationProvider;
 	
 	/**
 	 * 	The matched joinpoint
@@ -52,7 +53,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 	@param 	matchResult
 	 * 			The join point
 	 */
-	public AbstractCoordinator(AdviceTransformationProvider<?> adviceTransformationProvider, MatchResult<?, ?> matchResult) {
+	public AbstractCoordinator(RuntimeTransformationProvider adviceTransformationProvider, MatchResult<?, ?> matchResult) {
 		this.adviceTransformationProvider = adviceTransformationProvider;
 		this.matchResult = matchResult;
 	}
@@ -93,7 +94,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 		for (RuntimePointcutExpression expression : expressions) {
 			RuntimePointcutExpression actualExpression = (RuntimePointcutExpression) expression.origin();
 			
-			if (!getAdviceTransformationProvider().canTransform(actualExpression))
+			if (!getAdviceTransformationProvider().supports(actualExpression))
 				continue;
 			
 			RuntimeExpressionProvider transformer = getAdviceTransformationProvider().getRuntimeTransformer(actualExpression);
@@ -121,6 +122,10 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 			The naming registry for expressions
 	 */
 	protected Block addTest(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
+		return addTest(tree, expressionNames, getTest(tree, expressionNames));
+	}
+	
+	protected Block addTest(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames, IfThenElseStatement test) {
 		Block body = new Block();
 		
 		// Insert all the selected runtime expression-statements
@@ -128,6 +133,12 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 		for (Statement st : statements)
 			body.addStatement(st);
 		
+		body.addStatement(test);
+		
+		return body;
+	}
+	
+	protected IfThenElseStatement getTest(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
 		// Now, convert the actual expression to the right test
 		Expression completeTest = convertToTest(tree, expressionNames);
 		
@@ -136,9 +147,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 		
 		IfThenElseStatement ifStatement = new IfThenElseStatement(negation, getTerminateBody(), null);
 		
-		body.addStatement(ifStatement);
-		
-		return body;
+		return ifStatement;
 	}
 	
 	/**
@@ -249,7 +258,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 
 	 * 	@return	The advice transformer
 	 */
-	public AdviceTransformationProvider getAdviceTransformationProvider() {
+	public RuntimeTransformationProvider getAdviceTransformationProvider() {
 		return adviceTransformationProvider;
 	}
 }

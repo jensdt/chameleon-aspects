@@ -3,7 +3,7 @@ package chameleon.aspects.advice.types.translation;
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.runtimetransformation.Coordinator;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 
@@ -30,7 +30,7 @@ public class NoOperationTranslator extends AbstractAdviceTransformationProvider<
 	}
 
 	@Override
-	public boolean canTransform(RuntimePointcutExpression pointcutExpression) {
+	public boolean supports(RuntimePointcutExpression pointcutExpression) {
 		return false;
 	}
 

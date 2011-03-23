@@ -1,4 +1,4 @@
-package chameleon.aspects.advice.types.translation.methodInvocation;
+package chameleon.aspects.advice.types.translation.reflection.methodInvocation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,28 +13,24 @@ import jnome.core.language.Java;
 import jnome.core.type.ArrayTypeReference;
 import jnome.core.type.BasicJavaTypeReference;
 import jnome.core.variable.JavaVariableDeclaration;
-
-import org.rejuse.predicate.SafePredicate;
-
 import chameleon.aspects.Aspect;
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.runtimetransformation.Coordinator;
 import chameleon.aspects.advice.runtimetransformation.reflectiveinvocation.MethodCoordinator;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeArgumentsTypeCheck;
-import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeIfCheck;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeIfCheck;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeTypeCheck;
-import chameleon.aspects.advice.types.translation.ReflectiveAdviceTransformationProvider;
+import chameleon.aspects.advice.types.translation.reflection.ReflectiveAdviceTransformationProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.namingRegistry.NamingRegistryFactory;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.ArgsPointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.IfPointcutExpression;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.TargetTypePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.ThisTypePointcutExpression;
-import chameleon.aspects.pointcut.expression.runtime.TypePointcutExpression;
 import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.declaration.DeclarationWithParametersHeader;
 import chameleon.core.declaration.SimpleNameDeclarationWithParametersHeader;
@@ -56,6 +52,7 @@ import chameleon.core.variable.VariableDeclaration;
 import chameleon.oo.language.ObjectOrientedLanguage;
 import chameleon.oo.type.BasicTypeReference;
 import chameleon.oo.type.RegularType;
+import chameleon.oo.type.Type;
 import chameleon.oo.type.TypeReference;
 import chameleon.oo.type.generics.BasicTypeArgument;
 import chameleon.oo.type.generics.FormalTypeParameter;
@@ -77,11 +74,10 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 
 	public final String methodNameParamName = "_$methodName";
 	public final String argumentNameParamName = "_$arguments";
-	public final String argumentIndexParamName = "_$argumentIndex";
 	public final String typesParamName = "_$types";
 	public final String retvalName = "_$retval";
 	
-	private Advice advice; 
+	private Advice advice;
 	
 	public ReflectiveMethodInvocation(MatchResult<? extends PointcutExpression, ? extends MethodInvocation> joinpoint) {
 		super(joinpoint);
@@ -96,7 +92,7 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		return advice;
 	}
 	
-	protected abstract Block getInnerBody() throws LookupException;
+	protected abstract Block getInnerBody();
 	
 	public List<TypeExceptionDeclaration> getCheckedExceptionsWithoutSubtypes(Method method) throws LookupException {
 		List<TypeExceptionDeclaration> checkedTypeExceptions = new ArrayList<TypeExceptionDeclaration>();
@@ -122,27 +118,18 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		
 		return checkedTypeExceptions;
 	}
-	
-	public Block getRethrowBody(NamedTargetExpression target) {
-		Block rethrowBody = new Block();
-		ThrowStatement rethrow = new ThrowStatement(target);
-
-		rethrowBody.addStatement(rethrow);
 		
-		return rethrowBody;
-	}
-	
 	public TryStatement getEnclosingTry(Block tryBody) throws LookupException {
 		// Re-throw unchecked exceptions (subclasses of RuntimeException )	
 		TryStatement exceptionHandler = new TryStatement(tryBody);
-		exceptionHandler.addCatchClause(new CatchClause(new FormalParameter("unchecked", new BasicTypeReference("RuntimeException")), getRethrowBody(new NamedTargetExpression("unchecked"))));
+		exceptionHandler.addCatchClause(getCatchClause("unchecked", ((ObjectOrientedLanguage) advice().language(ObjectOrientedLanguage.class)).getUncheckedException()));
 
 		// Add a re-throw for each checked exception
 		int exceptionIndex = 0;
 		List<TypeExceptionDeclaration> checkedTypeExceptions = getCheckedExceptionsWithoutSubtypes(getJoinpoint().getJoinpoint().getElement());
 		
 		for (TypeExceptionDeclaration exception : checkedTypeExceptions) {
-			exceptionHandler.addCatchClause(getRethrow("ex" + exceptionIndex, exception.getTypeReference().clone()));
+			exceptionHandler.addCatchClause(getCatchClause("ex" + exceptionIndex, exception.getTypeReference().getType().clone()));
 			
 			exceptionIndex++;
 		}
@@ -153,10 +140,19 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		return exceptionHandler;
 	}
 	
-	public CatchClause getRethrow(String name, TypeReference type) {
-		return new CatchClause(new FormalParameter(name, type), getRethrowBody(new NamedTargetExpression(name)));
+	public CatchClause getCatchClause(String name, Type type) {
+		return new CatchClause(new FormalParameter(name, new BasicTypeReference(type.getFullyQualifiedName())), getRethrowBody(name));
 	}
 	
+	public Block getRethrowBody(String name) {
+		Block rethrowBody = new Block();
+		ThrowStatement rethrow = new ThrowStatement(new NamedTargetExpression(name));
+
+		rethrowBody.addStatement(rethrow);
+		
+		return rethrowBody;
+	}
+		
 	public CatchClause getCatchAll() {
 		Block emptyCatchBody = new Block();
 		emptyCatchBody.addStatement(new EmptyStatement());
@@ -168,6 +164,20 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		ThrowStatement throwError = new ThrowStatement(new ConstructorInvocation(new BasicJavaTypeReference("Error"), null));
 		return throwError;
 	}
+	
+	@Override
+	public String getAdviceMethodName(Advice advice) {
+		// Get the naming registries
+		NamingRegistry<Advice> adviceNamingRegistry = NamingRegistryFactory.instance().getNamingRegistryFor("advice");
+		NamingRegistry<Method> methodNamingRegistry = NamingRegistryFactory.instance().getNamingRegistryFor("javamethod");			
+		
+		try {
+			return "advice_" + adviceNamingRegistry.getName(advice) + "_" + methodNamingRegistry.getName(getJoinpoint().getJoinpoint().getElement());
+		} catch (LookupException e) {
+			System.out.println("LookupEx while getting method");
+			return "advice_errord";
+		}
+	}
 
 	@Override
 	public NormalMethod transform(Advice advice) throws LookupException {
@@ -178,26 +188,15 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		
 		// Get the class we are going to create this method in
 		RegularType aspectClass = getOrCreateAspectClass(compilationUnit, aspect.name());
-			
-		// Get the naming registries
-		NamingRegistry<Advice> adviceNamingRegistry = NamingRegistryFactory.instance().getNamingRegistryFor("advice");
-		NamingRegistry<Method> methodNamingRegistry = NamingRegistryFactory.instance().getNamingRegistryFor("javamethod");			
 		
-		Method m = getJoinpoint().getJoinpoint().getElement();
-		final String adviceMethodName = "advice_" + adviceNamingRegistry.getName(advice) + "_" + methodNamingRegistry.getName(m);
-		
-		// Check if this method has already been defined (which is possible, if a joinpoint to the same method is found multiple times)
-		List<NormalMethod> definedMethods = compilationUnit.descendants(NormalMethod.class, new SafePredicate<NormalMethod>() {
-			@Override
-			public boolean eval(NormalMethod object) {
-				return object.name().equals(adviceMethodName);
-			}
-		});
-		
-		if (!definedMethods.isEmpty())
+		// Check if the method has already been created
+		if (isAlreadyDefined(advice, compilationUnit))
 			return null;
 		
 		
+		String adviceMethodName = getAdviceMethodName(advice);
+		Method m = getJoinpoint().getJoinpoint().getElement();
+		// Create the method
 		DeclarationWithParametersHeader header = new SimpleNameDeclarationWithParametersHeader(adviceMethodName);
 		
 		TypeReference returnType = new BasicTypeReference("T");			
@@ -220,10 +219,7 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		
 		FormalParameter methodArguments = new FormalParameter(argumentNameParamName, new ArrayTypeReference(new BasicJavaTypeReference("Object")));
 		header.addFormalParameter(methodArguments);
-		
-		FormalParameter methodArgumentsIndex = new FormalParameter(argumentIndexParamName, new ArrayTypeReference(new BasicJavaTypeReference("int")));
-		header.addFormalParameter(methodArgumentsIndex);
-		
+				
 		FormalParameter callee = new FormalParameter(calleeName, new BasicTypeReference("Object"));
 		header.addFormalParameter(callee);
 		
@@ -241,12 +237,12 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 	
 	protected Block getBody() throws LookupException {
 		Block finalBody = new Block();
-		/*
-		 * 	Inject the parameters
-		 */
-		List<Statement> parameterDeclarations = getInjectedParameterDeclarations(new NamedTargetExpression(argumentNameParamName), new NamedTargetExpression(argumentIndexParamName));
-		for (Statement parameterDeclaration : parameterDeclarations)
-			finalBody.addStatement(parameterDeclaration);
+//		/*
+//		 * 	Inject the parameters FIXME: delete after parameter injection has moved to runtime, see getInjectedParameterDeclarations
+//		 */
+//		List<Statement> parameterDeclarations = getInjectedParameterDeclarations(new NamedTargetExpression(argumentNameParamName), new NamedTargetExpression(argumentIndexParamName));
+//		for (Statement parameterDeclaration : parameterDeclarations)
+//			finalBody.addStatement(parameterDeclaration);
 		
 		/*
 		 *	Get the inner body 
@@ -275,7 +271,7 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 			// If this happens, it is due to a bug in the weaver!
 			finalBody.addStatement(getDieStatement());
 		} else {
-			finalBody = adviceBody;
+			finalBody.addBlock(adviceBody);
 		}
 		
 		return finalBody;
@@ -284,52 +280,52 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 	protected boolean encloseWithTry() {
 		return true;
 	}
-
-	protected List<Statement> getInjectedParameterDeclarations(Expression argumentsTarget, Expression argumentsIndexTarget) {
-		List<Statement> declarations = new ArrayList<Statement>();
-		
-		// Iterate over every formal parameter in the advice and add its declaration to the result list
-		for (FormalParameter fp : (List<FormalParameter>) advice().formalParameters()) {
-			int index = advice().pointcutReference().indexOfParameter(fp);
-			
-			LocalVariableDeclarator parameterInjector = new LocalVariableDeclarator(fp.getTypeReference().clone());
-			VariableDeclaration parameterInjectorDecl = new VariableDeclaration(fp.getName());
-			
-			// Add the indirection to the correct parameter
-			ArrayAccessExpression argumentsIndexAccess = new ArrayAccessExpression(argumentsIndexTarget);
-			argumentsIndexAccess.addIndex(new FilledArrayIndex(new RegularLiteral(new BasicJavaTypeReference("int"), Integer.toString(index))));
-
-			ArrayAccessExpression argumentsAccess = new ArrayAccessExpression(argumentsTarget);
-			argumentsAccess.addIndex(new FilledArrayIndex(argumentsIndexAccess));
-
-			// Add the cast, since the arguments is just an Object array
-			// Mind boxable-unboxable types
-			Java java = fp.language(Java.class);
-			
-			TypeReference typeToCastTo = null;
-			try {
-				if (fp.getTypeReference().getType().isTrue(fp.language().property("primitive")))
-					typeToCastTo = new BasicTypeReference (java.box(fp.getTypeReference().getType()).getFullyQualifiedName());
-				else
-					typeToCastTo = fp.getTypeReference().clone();
-			} catch (LookupException e) {
-				System.out.println("Lookupexception while boxing");
-			}
-				
-			
-			ClassCastExpression cast = new ClassCastExpression(typeToCastTo, argumentsAccess);
-			
-			parameterInjectorDecl.setInitialization(cast);
-			parameterInjector.add(parameterInjectorDecl);
-			
-			declarations.add(parameterInjector);
-		}
-		
-		return declarations;
-	}
+//	FIXME: delete after move to runtime is completed
+//	protected List<Statement> getInjectedParameterDeclarations(Expression argumentsTarget, Expression argumentsIndexTarget) {
+//		List<Statement> declarations = new ArrayList<Statement>();
+//		
+//		// Iterate over every formal parameter in the advice and add its declaration to the result list
+//		for (FormalParameter fp : (List<FormalParameter>) advice().formalParameters()) {
+//			int index = advice().pointcutReference().indexOfParameter(fp);
+//			
+//			LocalVariableDeclarator parameterInjector = new LocalVariableDeclarator(fp.getTypeReference().clone());
+//			VariableDeclaration parameterInjectorDecl = new VariableDeclaration(fp.getName());
+//			
+//			// Add the indirection to the correct parameter
+//			ArrayAccessExpression argumentsIndexAccess = new ArrayAccessExpression(argumentsIndexTarget);
+//			argumentsIndexAccess.addIndex(new FilledArrayIndex(new RegularLiteral(new BasicJavaTypeReference("int"), Integer.toString(index))));
+//
+//			ArrayAccessExpression argumentsAccess = new ArrayAccessExpression(argumentsTarget);
+//			argumentsAccess.addIndex(new FilledArrayIndex(argumentsIndexAccess));
+//
+//			// Add the cast, since the arguments is just an Object array
+//			// Mind boxable-unboxable types
+//			Java java = fp.language(Java.class);
+//			
+//			TypeReference typeToCastTo = null;
+//			try {
+//				if (fp.getTypeReference().getType().isTrue(fp.language().property("primitive")))
+//					typeToCastTo = new BasicTypeReference (java.box(fp.getTypeReference().getType()).getFullyQualifiedName());
+//				else
+//					typeToCastTo = fp.getTypeReference().clone();
+//			} catch (LookupException e) {
+//				System.out.println("Lookupexception while boxing");
+//			}
+//
+//			ClassCastExpression cast = new ClassCastExpression(typeToCastTo, argumentsAccess);
+//			
+//			parameterInjectorDecl.setInitialization(cast);
+//			parameterInjector.add(parameterInjectorDecl);
+//			
+//			declarations.add(parameterInjector);
+//		}
+//		
+//		return declarations;
+//	}
 	
-	public RegularMethodInvocation createProceedInvocation(InvocationTarget aspectClassTarget, Expression objectTarget, Expression methodNameTarget, Expression argumentsTarget) throws LookupException {
-		RegularMethodInvocation proceedInvocation = new RegularMethodInvocation("proceed", aspectClassTarget);
+	public RegularMethodInvocation createProceedInvocation(InvocationTarget aspectClassTarget, Expression objectTarget, Expression methodNameTarget, Expression argumentsTarget) {
+		RegularMethodInvocation getInstance = new RegularMethodInvocation("instance", aspectClassTarget);
+		RegularMethodInvocation proceedInvocation = new RegularMethodInvocation("proceed", getInstance);
 		proceedInvocation.addArgument((new BasicTypeArgument(new BasicTypeReference("T"))));
 		
 		proceedInvocation.addArgument(objectTarget);
@@ -339,8 +335,12 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 		ArrayCreationExpression typesArray = new ArrayCreationExpression(new ArrayTypeReference(new BasicJavaTypeReference("Class")));
 		ArrayInitializer typesInitializer = new ArrayInitializer();					
 	
-		for (FormalParameter fp : (List<FormalParameter>) getJoinpoint().getJoinpoint().getElement().formalParameters())
-			typesInitializer.addInitializer(new ClassLiteral(fp.getTypeReference().clone()));
+		try {
+			for (FormalParameter fp : (List<FormalParameter>) getJoinpoint().getJoinpoint().getElement().formalParameters())
+				typesInitializer.addInitializer(new ClassLiteral(fp.getTypeReference().clone()));
+		} catch (LookupException e) {
+			throw new RuntimeException(e);
+		}
 		
 		typesArray.setInitializer(typesInitializer);
 		
@@ -452,8 +452,8 @@ public abstract class ReflectiveMethodInvocation extends ReflectiveAdviceTransfo
 
 
 	@Override
-	public boolean canTransform(RuntimePointcutExpression pointcutExpression) {
-		if (super.canTransform(pointcutExpression))
+	public boolean supports(RuntimePointcutExpression pointcutExpression) {
+		if (super.supports(pointcutExpression))
 			return true;
 		
 		if (pointcutExpression instanceof ArgsPointcutExpression)

@@ -17,7 +17,7 @@ import chameleon.core.modifier.Modifier;
 import chameleon.core.variable.FormalParameter;
 import chameleon.util.Util;
 
-public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvocationExpression<E, T>, T extends MethodInvocation> extends MethodInvocationPointcutExpression<E, T> {
+public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvocationExpression<E>> extends MethodInvocationPointcutExpression<E> {
 
 	private SingleAssociation<AnnotatedMethodInvocationExpression, AnnotationReference> _reference = new SingleAssociation<AnnotatedMethodInvocationExpression, AnnotationReference>(this); 
 	
@@ -37,7 +37,12 @@ public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvoca
 	}
 
 	@Override
-	public MatchResult matches(MethodInvocation joinpoint) throws LookupException {	
+	public MatchResult matches(Element element) throws LookupException {
+		if (!(element instanceof MethodInvocation))
+			return MatchResult.noMatch();
+		
+		MethodInvocation joinpoint = (MethodInvocation) element;
+		
 		Method target = joinpoint.getElement();
 		
 		List<Modifier> modifiers = target.modifiers();
@@ -54,13 +59,13 @@ public class AnnotatedMethodInvocationExpression<E extends AnnotatedMethodInvoca
 
 	@Override
 	public E clone() {
-		AnnotatedMethodInvocationExpression<E, T> clone = new AnnotatedMethodInvocationExpression<E, T>();
+		AnnotatedMethodInvocationExpression<E> clone = new AnnotatedMethodInvocationExpression<E>();
 		clone.setReference(reference().clone());
 		return (E) clone;
 	}
 	
 	@Override
-	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
 		return super.matchesInverse(joinpoint);
 	}
 }

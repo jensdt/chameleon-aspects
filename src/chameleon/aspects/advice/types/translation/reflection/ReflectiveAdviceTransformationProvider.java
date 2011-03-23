@@ -1,4 +1,4 @@
-package chameleon.aspects.advice.types.translation;
+package chameleon.aspects.advice.types.translation.reflection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +9,15 @@ import jnome.core.variable.JavaVariableDeclaration;
 
 import org.rejuse.predicate.SafePredicate;
 
+import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.runtimetransformation.Coordinator;
-import chameleon.aspects.advice.runtimetransformation.reflectiveinvocation.MethodCoordinator;
-import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeArgumentsTypeCheck;
-import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeIfCheck;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
+import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeIfCheck;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeTypeCheck;
+import chameleon.aspects.advice.types.translation.AbstractAdviceTransformationProvider;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.runtime.ArgsPointcutExpression;
+import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.IfPointcutExpression;
-import chameleon.aspects.pointcut.expression.runtime.RuntimePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.TargetTypePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.ThisTypePointcutExpression;
 import chameleon.aspects.pointcut.expression.runtime.TypePointcutExpression;
@@ -32,7 +31,6 @@ import chameleon.core.method.RegularImplementation;
 import chameleon.core.statement.Block;
 import chameleon.core.statement.Statement;
 import chameleon.core.variable.FormalParameter;
-import chameleon.core.variable.RegularMemberVariable;
 import chameleon.core.variable.VariableDeclaration;
 import chameleon.oo.type.BasicTypeReference;
 import chameleon.oo.type.RegularType;
@@ -283,7 +281,7 @@ public abstract class ReflectiveAdviceTransformationProvider extends AbstractAdv
 		aspectClass.add(method);
 	}
 	@Override
-	public boolean canTransform(RuntimePointcutExpression pointcutExpression) {
+	public boolean supports(RuntimePointcutExpression pointcutExpression) {
 		if (pointcutExpression instanceof TypePointcutExpression)
 			return true;
 		
@@ -307,6 +305,20 @@ public abstract class ReflectiveAdviceTransformationProvider extends AbstractAdv
 		return null;
 	}
 	
+	public boolean isAlreadyDefined(Advice advice, CompilationUnit cu) {
+		final String name = getAdviceMethodName(advice);
+		
+		return cu.hasDescendant(NormalMethod.class, new SafePredicate<NormalMethod>() {
+
+			@Override
+			public boolean eval(NormalMethod object) {
+				return name.equals(object.name());
+			}
+		});
+	}
+	
+	public abstract String getAdviceMethodName(Advice advice);
+
 	@Override
 	protected abstract Coordinator<NormalMethod> getCoordinator();
 }

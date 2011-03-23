@@ -5,25 +5,25 @@ import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.variable.FormalParameter;
 
-public class PointcutExpressionNot<E extends PointcutExpressionNot<E, T>, T extends Element> extends PointcutExpressionSingle<E, T> {
+public class PointcutExpressionNot<E extends PointcutExpressionNot<E>> extends PointcutExpressionSingle<E> {
 
 	public PointcutExpressionNot(PointcutExpression expression) {
 		super(expression);
 	}
 
 	@Override
-	public MatchResult matches(T joinpoint) throws LookupException {
+	public MatchResult matches(Element joinpoint) throws LookupException {
 		return expression().matchesInverse(joinpoint);
 	}
 	
 	@Override
-	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
 		return expression().matches(joinpoint);
 	}
 
 	@Override
 	public E clone() {
-		return (E) new PointcutExpressionNot<E, T>(expression().clone());
+		return (E) new PointcutExpressionNot<E>(expression().clone());
 	}
 	
 	@Override
@@ -44,22 +44,5 @@ public class PointcutExpressionNot<E extends PointcutExpressionNot<E, T>, T exte
 			return null;
 		
 		return new PointcutExpressionNot(expression);
-	}
-	
-	/**
-	 * 	{@inheritDoc}
-	 * 
-	 */
-	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		return expression().hasParameter(fp);
-	}
-
-	/**
-	 * 	{@inheritDoc}
-	 */
-	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		return expression().indexOfParameter(fp);
 	}
 }

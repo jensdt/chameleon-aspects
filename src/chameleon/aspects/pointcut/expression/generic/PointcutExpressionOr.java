@@ -9,14 +9,14 @@ import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.variable.FormalParameter;
 
-public class PointcutExpressionOr<E extends PointcutExpressionOr<E, T>, T extends Element> extends PointcutExpressionDual<E, T> {
+public class PointcutExpressionOr<E extends PointcutExpressionOr<E>> extends PointcutExpressionDual<E> {
 
 	public PointcutExpressionOr(PointcutExpression expression1, PointcutExpression expression2) {
 		super(expression1, expression2);
 	}
 
 	@Override
-	public MatchResult matches(T joinpoint) throws LookupException {
+	public MatchResult matches(Element joinpoint) throws LookupException {
 		MatchResult r1 = expression1().matches(joinpoint);
 		
 		if (r1.isMatch())
@@ -26,7 +26,7 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E, T>, T extend
 	}
 	
 	@Override
-	public MatchResult matchesInverse(T joinpoint) throws LookupException {
+	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
 		MatchResult r1 = expression1().matchesInverse(joinpoint);
 		MatchResult r2 = expression2().matchesInverse(joinpoint);
 		
@@ -38,7 +38,7 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E, T>, T extend
 
 	@Override
 	public E clone() {
-		return (E) new PointcutExpressionOr<E, T>(expression1().clone(), expression2().clone());
+		return (E) new PointcutExpressionOr<E>(expression1().clone(), expression2().clone());
 	}
 
 	/**
@@ -87,23 +87,6 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E, T>, T extend
 		return supportedJoinpoints;
 	}
 	
-	/**
-	 * 	{@inheritDoc}
-	 * 
-	 */
-	@Override
-	public boolean hasParameter(FormalParameter fp) {
-		return expression1().hasParameter(fp) && expression2().hasParameter(fp);
-	}
-	
-	/**
-	 * 	{@inheritDoc}
-	 */
-	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		throw new RuntimeException();
-	}
-	
 	@Override
 	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
 		PointcutExpression left = expression1().getPrunedTree(type);
@@ -132,5 +115,12 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E, T>, T extend
 			return left;
 		
 		return new PointcutExpressionOr(left, right);
+	}
+	
+	/**
+	 * 	{@inheritDoc}
+	 */
+	public boolean hasParameter(FormalParameter fp) {
+		return expression1().hasParameter(fp) && expression2().hasParameter(fp);
 	}
 }
