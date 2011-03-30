@@ -51,4 +51,8 @@ public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingl
 	public Set<Class> supportedJoinpoints() {
 		return expression().supportedJoinpoints();
 	}
+	
+	public void renameParameters(List<String> newParameterNames) {
+		expression().renameParameters(newParameterNames);
+	}
 }

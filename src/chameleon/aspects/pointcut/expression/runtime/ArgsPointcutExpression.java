@@ -1,7 +1,7 @@
 package chameleon.aspects.pointcut.expression.runtime;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -80,5 +80,18 @@ public class ArgsPointcutExpression<E extends ArgsPointcutExpression<E>> extends
 		}
 		
 		return -1;
+	}
+	
+	public void renameParameters(List<String> newParameterNames) {
+		for (int i = 0; i < parameters().size(); i++) {
+			NamedTargetExpression parameter = parameters().get(i);
+			try {
+				if (parameter.getElement() instanceof FormalParameter) {
+					parameter.getElement().setName(newParameterNames.get(i));
+				}
+			} catch (LookupException e) {
+				// ignore
+			}
+		}
 	}
 }

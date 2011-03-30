@@ -106,30 +106,16 @@ public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> imp
 		setAsParent(_expression, expression);
 	}
 	
-	public List<MatchResult> joinpoints(CompilationUnit compilationUnit) throws LookupException {
-		List<MatchResult> results = new ArrayList<MatchResult>();
-		
-		for (Class c : (Set<Class>) expression().supportedJoinpoints()) {
-			List<Element> descendants = compilationUnit.descendants(c);
-			for (Element mi : descendants) {
-				try {
-					MatchResult match = expression().matches(mi);
-				
-					if (match.isMatch())
-						results.add(match);
-				} catch (LookupException e) {
-					
-				}
-			}
-		}
-		return results; 
-	}	
 	public E clone() {
 		Pointcut<E> clone = new Pointcut<E>();
 		clone.setHeader((SimpleNameDeclarationWithParametersHeader) header().clone());
 		clone.setExpression(expression().clone());
 		
 		return (E) clone;
+	}
+	
+	public List<FormalParameter> parameters() {
+		return header().formalParameters();
 	}
 	
 	private List<FormalParameter> unresolvedParameters() {

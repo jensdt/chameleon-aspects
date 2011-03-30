@@ -13,6 +13,7 @@ import org.rejuse.property.PropertySet;
 import chameleon.aspects.Aspect;
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.aspects.pointcut.PointcutReference;
+import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.DeclarationSelector;
@@ -43,7 +44,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 
 	private OrderedMultiAssociation<Advice<E>, FormalParameter> _parameters = new OrderedMultiAssociation<Advice<E>, FormalParameter>(this);
 	private SingleAssociation<Advice<E>, Block> _body = new SingleAssociation<Advice<E>, Block>(this);
-	private SingleAssociation<Advice<E>, PointcutReference> _pointcutReference = new SingleAssociation<Advice<E>, PointcutReference>(this);
+	private SingleAssociation<Advice<E>, PointcutExpression> _pointcutExpression = new SingleAssociation<Advice<E>, PointcutExpression>(this);
 	private SingleAssociation<Advice<E>, TypeReference> _returnType = new SingleAssociation<Advice<E>, TypeReference>(this);
 
 	public Block body() {
@@ -73,7 +74,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 	@Override
 	public LookupStrategy lexicalLookupStrategy(Element element)
 			throws LookupException {
-		if (pointcutReference().equals(element) || body().equals(element)) {
+		if (pointcutExpression().equals(element) || body().equals(element)) {
 			if (_lexical == null) {
 				_lexical = language().lookupFactory()
 						.createLexicalLookupStrategy(localLookupStrategy(),
@@ -104,25 +105,12 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 		return (Aspect) parent();
 	}
 
-	/**
-	 * Get the pointcut that this Advice applies to
-	 */
-	public Pointcut pointcut() {
-		try {
-			return pointcutReference().getElement();
-		} catch (LookupException e) {
-			e.printStackTrace();
-
-			return null;
-		}
+	public PointcutExpression pointcutExpression() {
+		return _pointcutExpression.getOtherEnd();
 	}
 
-	public PointcutReference pointcutReference() {
-		return _pointcutReference.getOtherEnd();
-	}
-
-	public void setPointcutReference(PointcutReference pointcutref) {
-		setAsParent(_pointcutReference, pointcutref);
+	public void setPointcutExpression(PointcutExpression pointcutref) {
+		setAsParent(_pointcutExpression, pointcutref);
 	}
 
 	@Override
@@ -130,7 +118,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 		List<Element> result = new ArrayList<Element>();
 
 		Util.addNonNull(body(), result);
-		Util.addNonNull(pointcutReference(), result);
+		Util.addNonNull(pointcutExpression(), result);
 		Util.addNonNull(returnType(), result);
 		result.addAll(formalParameters());
 		result.addAll(modifiers());
@@ -145,7 +133,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 			returnTypeClone = returnType().clone();
 
 		Advice clone = new Advice(returnTypeClone);
-		clone.setPointcutReference(pointcutReference().clone());
+		clone.setPointcutExpression(pointcutExpression().clone());
 		clone.setBody(body().clone());
 
 		for (FormalParameter p : formalParameters())
@@ -161,7 +149,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 		List<FormalParameter> unresolved = new ArrayList<FormalParameter>();
 
 		for (FormalParameter fp : (List<FormalParameter>) formalParameters())
-			if (!pointcutReference().hasParameter(fp))
+			if (!pointcutExpression().hasParameter(fp))
 				unresolved.add(fp);
 
 		return unresolved;

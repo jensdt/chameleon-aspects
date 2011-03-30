@@ -71,4 +71,9 @@ public abstract class PointcutExpressionDual<E extends PointcutExpressionDual<E>
 		
 		return result;
 	}
+	
+	public void renameParameters(List<String> newParameterNames) {
+		expression1().renameParameters(newParameterNames);
+		expression2().renameParameters(newParameterNames);
+	}
 }

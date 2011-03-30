@@ -118,4 +118,14 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E>> extends P
 	public boolean hasParameter(FormalParameter fp) {
 		return expression1().hasParameter(fp) || expression2().hasParameter(fp);
 	}
+	
+	@Override
+	public int indexOfParameter(FormalParameter fp) {
+		int expr1 = expression1().indexOfParameter(fp);
+		
+		if (expr1 == -1)
+			return expression2().indexOfParameter(fp);
+		else
+			return expr1;
+	}
 }

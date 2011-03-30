@@ -15,14 +15,27 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E>> extends Poi
 		super(expression1, expression2);
 	}
 
+	/**
+	 * 	{@inheritDoc}
+	 * 
+	 * 	We can't just return a single expression if it matches - e.g. this example:
+ 	 * 	(callAnnotated(Deprecated) && if(false) ) || (call(void hrm.Person.doubleTest()) && if(true)) 
+	 * 
+	 *  Suppose both static pointcut expressions match and we only return the first one - this will cause the weaver not to weave, which is wrong		
+	 */
 	@Override
 	public MatchResult matches(Element joinpoint) throws LookupException {
 		MatchResult r1 = expression1().matches(joinpoint);
+		MatchResult r2 = expression2().matches(joinpoint);
 		
-		if (r1.isMatch())
+		if (r1.isMatch() && r2.isMatch())
+			return new MatchResult<PointcutExpressionOr<?>, Element<?>>(this, joinpoint);
+		else if (r1.isMatch())
 			return r1;
-		
-		return expression2().matches(joinpoint);
+		else if (r2.isMatch())
+			return r2;
+		else
+			return MatchResult.noMatch();
 	}
 	
 	@Override
@@ -122,5 +135,9 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E>> extends Poi
 	 */
 	public boolean hasParameter(FormalParameter fp) {
 		return expression1().hasParameter(fp) && expression2().hasParameter(fp);
+	}
+	
+	public int indexOfParameter(FormalParameter fp) {
+		return expression1().indexOfParameter(fp);
 	}
 }

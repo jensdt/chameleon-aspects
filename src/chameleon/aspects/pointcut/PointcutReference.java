@@ -11,7 +11,6 @@ import chameleon.core.lookup.LookupException;
 import chameleon.core.lookup.SimpleNameCrossReferenceWithArgumentsSelector;
 import chameleon.core.reference.CrossReference;
 import chameleon.core.reference.CrossReferenceWithArguments;
-import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.core.variable.FormalParameter;
 import chameleon.oo.type.Type;
@@ -72,7 +71,7 @@ public class PointcutReference<E extends PointcutReference<E>> extends
 
 	@Override
 	public VerificationResult verifySelf() {
-		return Valid.create();
+		return super.verifySelf();
 	}
 	
 
@@ -113,8 +112,4 @@ public class PointcutReference<E extends PointcutReference<E>> extends
 		}
 		return result;
 	}
-
-
-
-	
 }

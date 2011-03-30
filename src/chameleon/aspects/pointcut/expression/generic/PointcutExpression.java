@@ -7,6 +7,7 @@ import java.util.Set;
 
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.namespace.NamespaceElementImpl;
@@ -138,6 +139,35 @@ public abstract class PointcutExpression<E extends PointcutExpression<E>> extend
 	 * 	@return	True if the parameter can be resolved, false otherwise
 	 */
 	public boolean hasParameter(FormalParameter fp) {
-		return false;
+		return (indexOfParameter(fp) != -1);
 	}
+	
+	public int indexOfParameter(FormalParameter fp) {
+		return -1;
+	}
+	
+	public List<MatchResult> joinpoints(CompilationUnit compilationUnit) throws LookupException {
+		List<MatchResult> results = new ArrayList<MatchResult>();
+		
+		for (Class c : (Set<Class>) supportedJoinpoints()) {
+			List<Element> descendants = compilationUnit.descendants(c);
+			for (Element mi : descendants) {
+				try {
+					MatchResult match = matches(mi);
+				
+					if (match.isMatch())
+						results.add(match);
+				} catch (LookupException e) {
+					
+				}
+			}
+		}
+		return results; 
+	}	
+	
+	// FIXME: remove
+	public void renameParameters(List<String> newParameterNames) {
+		
+	}
+	
 }
