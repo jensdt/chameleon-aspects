@@ -3,6 +3,7 @@ package chameleon.aspects.advice.runtimetransformation;
 import java.util.ArrayList;
 import java.util.List;
 
+import chameleon.aspects.WeavingEncapsulator;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.pointcut.expression.MatchResult;
@@ -44,6 +45,9 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 */
 	private MatchResult<?, ?> matchResult;
 	
+	private WeavingEncapsulator nextWeavingEncapsulator;
+	private WeavingEncapsulator previousWeavingEncapsulator;
+	
 	/**
 	 * 	Constructor
 	 * 
@@ -52,9 +56,11 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 	@param 	matchResult
 	 * 			The join point
 	 */
-	public AbstractCoordinator(RuntimeTransformationProvider adviceTransformationProvider, MatchResult<?, ?> matchResult) {
+	public AbstractCoordinator(RuntimeTransformationProvider adviceTransformationProvider, MatchResult<?, ?> matchResult, WeavingEncapsulator previousWeavingEncapsulator, WeavingEncapsulator nextWeavingEncapsulator) {
 		this.adviceTransformationProvider = adviceTransformationProvider;
 		this.matchResult = matchResult;
+		this.nextWeavingEncapsulator = nextWeavingEncapsulator;
+		this.previousWeavingEncapsulator = previousWeavingEncapsulator;
 	}
 	
 	/**
@@ -259,5 +265,9 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 */
 	public RuntimeTransformationProvider getAdviceTransformationProvider() {
 		return adviceTransformationProvider;
+	}
+
+	public WeavingEncapsulator getNextWeavingEncapsulator() {
+		return nextWeavingEncapsulator;
 	}
 }

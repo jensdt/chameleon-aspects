@@ -1,7 +1,7 @@
 package chameleon.aspects.advice.types.translation;
 
+import chameleon.aspects.WeavingEncapsulator;
 import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.runtimetransformation.AbstractCoordinator;
 import chameleon.aspects.advice.runtimetransformation.Coordinator;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
@@ -13,18 +13,45 @@ import chameleon.core.lookup.LookupException;
  *
  */
 public abstract class AbstractAdviceTransformationProvider<T extends Element> implements AdviceTransformationProvider<T> {
+	/**
+	 * 	The joinpoint that is woven
+	 */
 	private MatchResult joinpoint;
 	
+	/**
+	 * 	The advice that is transformed
+	 */
+	private Advice advice;
 	
 	/**
 	 * 	The next AdviceTransformationProvider in the chain
 	 */
 	private AdviceTransformationProvider next;
 	
-	public AbstractAdviceTransformationProvider(MatchResult joinpoint) {
+	/**
+	 * 	Constructor
+	 * 
+	 * 	@param 	joinpoint
+	 * 			The joinpoint that is woven
+	 * 	@param 	advice
+	 * 			The advice that is transformed
+	 */
+	public AbstractAdviceTransformationProvider(MatchResult joinpoint, Advice advice) {
 		this.joinpoint = joinpoint;
+		this.advice = advice;
+	}
+	
+	/**
+	 * 	{@inheritDoc}
+	 */
+	@Override
+	public Advice getAdvice() {
+		return advice;
 	}
 
+	/**
+	 * 	 {@inheritDoc}
+	 */
 	@Override
 	public MatchResult getJoinpoint() {
 		return joinpoint;
@@ -50,22 +77,17 @@ public abstract class AbstractAdviceTransformationProvider<T extends Element> im
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public final void start(Advice<?> advice) throws LookupException {
-		T createdElement = transform(advice);
+	public final void start(WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator) throws LookupException {
+		T createdElement = transform(nextEncapsulator);
 		
 		//FIXME: place this somewhere else... maybe
-		Coordinator<T> coordinator = getCoordinator();
+		Coordinator<T> coordinator = getCoordinator(previousEncapsulator, nextEncapsulator);
 		if (coordinator != null)
-			coordinator.transform(createdElement, advice.formalParameters());
-//		
-//		List<? extends RuntimePointcutExpression> runtimePces = getJoinpoint().getExpression().getAllRuntimePointcutExpressions();
-//		for (RuntimePointcutExpression expr : runtimePces)
-//			if (canTransform(expr))
-//				getRuntimeTransformer(expr).transform(createdElement, expr);
-//		
+			coordinator.transform(createdElement, getAdvice().formalParameters());
+
 		if (next() != null)
-			next.start(advice);
+			next.start(previousEncapsulator, nextEncapsulator);
 	}
 
-	protected abstract Coordinator<T> getCoordinator();
+	protected abstract Coordinator<T> getCoordinator(WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator);
 }
