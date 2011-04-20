@@ -1,5 +1,6 @@
 package chameleon.aspects.advice.runtimetransformation.transformationprovider;
 
+import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.expression.Expression;
 
@@ -9,6 +10,6 @@ import chameleon.core.expression.Expression;
  * 	@author Jens
  *
  */
-public interface RuntimeExpressionProvider {
-	public Expression<?> getExpression(RuntimePointcutExpression<?> expr);
+public interface RuntimeExpressionProvider<T extends RuntimePointcutExpression<?>> {
+	public Expression<?> getExpression(T expr, NamingRegistry<RuntimePointcutExpression<?>> namingRegistry);
 }

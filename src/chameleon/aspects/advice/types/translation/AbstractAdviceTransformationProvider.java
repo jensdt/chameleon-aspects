@@ -77,17 +77,10 @@ public abstract class AbstractAdviceTransformationProvider<T extends Element> im
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public final void start(WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator) throws LookupException {
+	public void start(WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator) throws LookupException {
 		T createdElement = transform(nextEncapsulator);
-		
-		//FIXME: place this somewhere else... maybe
-		Coordinator<T> coordinator = getCoordinator(previousEncapsulator, nextEncapsulator);
-		if (coordinator != null)
-			coordinator.transform(createdElement, getAdvice().formalParameters());
 
 		if (next() != null)
 			next.start(previousEncapsulator, nextEncapsulator);
 	}
-
-	protected abstract Coordinator<T> getCoordinator(WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator);
 }

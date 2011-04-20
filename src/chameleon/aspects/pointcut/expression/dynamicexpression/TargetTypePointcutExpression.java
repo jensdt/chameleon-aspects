@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression.runtime;
+package chameleon.aspects.pointcut.expression.dynamicexpression;
 
 import chameleon.core.expression.NamedTargetExpression;
 

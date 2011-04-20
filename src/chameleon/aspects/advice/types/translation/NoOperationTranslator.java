@@ -31,28 +31,4 @@ public class NoOperationTranslator extends AbstractAdviceTransformationProvider<
 	public Element transform(WeavingEncapsulator next) throws LookupException {
 		return null;
 	}
-
-	/**
-	 *  {@inheritDoc}
-	 */
-	@Override
-	public boolean supports(RuntimePointcutExpression pointcutExpression) {
-		return false;
-	}
-
-	/**
-	 *  {@inheritDoc}
-	 */
-	@Override
-	public RuntimeExpressionProvider getRuntimeTransformer(RuntimePointcutExpression pointcutExpression) {
-		return null;
-	}
-
-	/**
-	 *  {@inheritDoc}
-	 */
-	@Override
-	protected Coordinator<Element> getCoordinator(WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator) {
-		return null;
-	}
 }

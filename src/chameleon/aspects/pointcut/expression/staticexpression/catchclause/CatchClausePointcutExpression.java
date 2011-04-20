@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression.catchclause;
+package chameleon.aspects.pointcut.expression.staticexpression.catchclause;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,16 +9,15 @@ import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.SubtypeMarker;
-import chameleon.aspects.pointcut.expression.generic.StaticPointcutExpression;
+import chameleon.aspects.pointcut.expression.staticexpression.AbstractStaticPointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.statement.Block;
-import chameleon.core.variable.FormalParameter;
 import chameleon.oo.type.TypeReference;
 import chameleon.support.statement.CatchClause;
 import chameleon.util.Util;
 
-public class CatchClausePointcutExpression<E extends CatchClausePointcutExpression<E>> extends StaticPointcutExpression<E> {
+public class CatchClausePointcutExpression<E extends CatchClausePointcutExpression<E>> extends AbstractStaticPointcutExpression<E> {
 	
 	private SingleAssociation<CatchClausePointcutExpression<E>, TypeReference<?>> _exceptionType = new SingleAssociation<CatchClausePointcutExpression<E>, TypeReference<?>>(this);
 	
@@ -46,10 +45,7 @@ public class CatchClausePointcutExpression<E extends CatchClausePointcutExpressi
 	}
 	
 	@Override
-	public MatchResult matches(Element element) throws LookupException {
-		if (!(element instanceof Block))
-			return MatchResult.noMatch();
-		
+	public MatchResult matches(Element element) throws LookupException {	
 		if (!(element.parent() instanceof CatchClause))
 			return MatchResult.noMatch();
 		
@@ -63,8 +59,8 @@ public class CatchClausePointcutExpression<E extends CatchClausePointcutExpressi
 	}
 
 	@Override
-	public Set<Class> supportedJoinpoints() {
-		Set<Class> result = new HashSet<Class>();
+	public Set<Class<? extends Element>> supportedJoinpoints() {
+		Set<Class<? extends Element>> result = new HashSet<Class<? extends Element>>();
 		result.add(Block.class);
 		return result;
 	}

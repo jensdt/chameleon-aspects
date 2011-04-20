@@ -1,6 +1,5 @@
 package chameleon.aspects.pointcut.expression;
 
-import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
 import chameleon.core.element.Element;
 
 public class MatchResult<T extends PointcutExpression, U extends Element> {

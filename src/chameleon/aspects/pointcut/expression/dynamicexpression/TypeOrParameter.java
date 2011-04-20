@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression.runtime;
+package chameleon.aspects.pointcut.expression.dynamicexpression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,5 +89,4 @@ public class TypeOrParameter<E extends TypeOrParameter<E>> extends NamespaceElem
 				return null;
 			}
 	}
-
 }

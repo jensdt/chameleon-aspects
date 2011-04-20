@@ -2,7 +2,6 @@ package chameleon.aspects.advice.types.translation;
 
 import chameleon.aspects.WeavingEncapsulator;
 import chameleon.aspects.advice.Advice;
-import chameleon.aspects.advice.runtimetransformation.RuntimeTransformationProvider;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
@@ -17,7 +16,7 @@ import chameleon.core.lookup.LookupException;
  * 	@author Jens
  *
  */
-public interface AdviceTransformationProvider<T extends Element> extends RuntimeTransformationProvider {
+public interface AdviceTransformationProvider<T extends Element> {
 	/**
 	 * 	Transform the given advice
 	 * 

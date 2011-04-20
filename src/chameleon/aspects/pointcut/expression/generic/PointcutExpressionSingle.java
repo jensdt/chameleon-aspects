@@ -6,12 +6,14 @@ import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
+import chameleon.aspects.pointcut.expression.PointcutExpression;
+import chameleon.aspects.pointcut.expression.staticexpression.AbstractStaticPointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.VerificationResult;
 
 
-public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingle<E>> extends PointcutExpression<E> {
+public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingle<E>> extends AbstractStaticPointcutExpression<E> {
 	private SingleAssociation<PointcutExpressionSingle, PointcutExpression> _expression = new SingleAssociation<PointcutExpressionSingle, PointcutExpression>(this);;
 
 	public PointcutExpressionSingle(PointcutExpression expression) {
@@ -19,7 +21,7 @@ public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingl
 		setExpression(expression);
 	}
 
-	public PointcutExpression expression() {
+	public PointcutExpression<?> expression() {
 		return _expression.getOtherEnd();
 	}
 
@@ -48,11 +50,17 @@ public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingl
 	}
 	
 	@Override
-	public Set<Class> supportedJoinpoints() {
+	public Set<Class<? extends Element>> supportedJoinpoints() {
 		return expression().supportedJoinpoints();
 	}
 	
-	public void renameParameters(List<String> newParameterNames) {
-		expression().renameParameters(newParameterNames);
+	@Override
+	public List<PointcutExpression> toPostorderList() {
+		List<PointcutExpression> result = new ArrayList<PointcutExpression>();
+		
+		result.addAll(expression().toPostorderList());
+		result.add(this);
+		
+		return result;
 	}
 }

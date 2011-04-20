@@ -1,23 +1,19 @@
-package chameleon.aspects.pointcut.expression.runtime;
+package chameleon.aspects.pointcut.expression.dynamicexpression;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
-import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.VerificationResult;
-import chameleon.core.variable.FormalParameter;
 import chameleon.oo.language.ObjectOrientedLanguage;
 import chameleon.util.Util;
 
-public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends RuntimePointcutExpression<E> {
+public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends AbstractDynamicPointcutExpression<E> implements RuntimePointcutExpression<E> {
 	
 	private SingleAssociation<IfPointcutExpression<E>, Expression> _expression = new SingleAssociation<IfPointcutExpression<E>, Expression>(this);
 
@@ -48,15 +44,6 @@ public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends Run
 	}
 
 	@Override
-	public Set<Class> supportedJoinpoints() {
-		Set<Class> resultList = new HashSet<Class>();
-		
-		resultList.add(Element.class);
-		
-		return resultList;
-	}
-
-	@Override
 	public VerificationResult verifySelf() {
 		VerificationResult result = super.verifySelf();
 		
@@ -70,6 +57,4 @@ public class IfPointcutExpression<E extends IfPointcutExpression<E>> extends Run
 		
 		return result;
 	}
-
-	
 }

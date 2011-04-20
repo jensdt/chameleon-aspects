@@ -1,16 +1,22 @@
 package chameleon.aspects.pointcut.expression.namedpointcut;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
+import org.rejuse.predicate.SafePredicate;
 
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.aspects.pointcut.PointcutReference;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
-import chameleon.aspects.pointcut.expression.runtime.ParameterExposurePointcutExpression;
+import chameleon.aspects.pointcut.expression.PointcutExpression;
+import chameleon.aspects.pointcut.expression.dynamicexpression.ParameterExposurePointcutExpression;
+import chameleon.aspects.pointcut.expression.staticexpression.AbstractStaticPointcutExpression;
+import chameleon.aspects.pointcut.expression.staticexpression.StaticPointcutExpression;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
@@ -18,9 +24,10 @@ import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.reference.CrossReference;
 import chameleon.core.variable.FormalParameter;
+import chameleon.exception.ChameleonProgrammerException;
 import chameleon.util.Util;
 
-public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> extends PointcutExpression<E> implements CrossReference<E, Pointcut>, ParameterExposurePointcutExpression {
+public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> extends AbstractStaticPointcutExpression<E> implements CrossReference<E, Pointcut> {
 	
 	private SingleAssociation<NamedPointcutExpression<E>, PointcutReference> _pointcutReference = new SingleAssociation<NamedPointcutExpression<E>, PointcutReference>(this);
 	
@@ -42,9 +49,9 @@ public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> exten
 		if (pointcutReference() == null)
 			return MatchResult.noMatch();
 		
-		MatchResult result = pointcutReference().getElement().expression().matches(joinpoint);
+		PointcutExpression expression = pointcutReference().getElement().expression();
 		
-		if (result.isMatch()) {
+		if (!(expression instanceof StaticPointcutExpression) || ((StaticPointcutExpression) expression).matches(joinpoint).isMatch() ) {
 			return new MatchResult(this, joinpoint);
 		}
 		
@@ -62,7 +69,7 @@ public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> exten
 	}
 
 	@Override
-	public Set<Class> supportedJoinpoints() {
+	public Set<Class<? extends Element>> supportedJoinpoints() {
 		if (pointcutReference() == null)
 			return Collections.emptySet();
 		
@@ -92,12 +99,13 @@ public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> exten
 	/**
 	 * 	{@inheritDoc}
 	 */
-	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
+	@Override
+	public PointcutExpression<?> getPrunedTree(SafePredicate<PointcutExpression<?>> filter) {
 		if (pointcutReference() == null)
 			return null;
 		
 		try {
-			return pointcutReference().getElement().expression().getPrunedTree(type);
+			return pointcutReference().getElement().expression().getPrunedTree(filter);
 		} catch (LookupException ex) {
 			return null;
 		}
@@ -128,21 +136,55 @@ public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> exten
 		return pointcutReference().hasParameter(fp);
 	}
 	
+	/**
+	 *  {@inheritDoc}
+	 */
 	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		// Step one: identify at which index no. this parameter is
-		int index = pointcutReference().indexOfParameter(fp);
-		if (index == -1)
-			return -1;
-		
-		// Step two: get the parameter at that index of the referenced pointcut definition
+	public PointcutExpression<?> expand() {
 		try {
-			FormalParameter referencedParameter = (FormalParameter) pointcutReference().getElement().parameters().get(index);
+			/* We replace this reference to a pointcut, by the pointcut expression of the pointcut. However, we must take into account that
+			 parameters have to be renamed.
+			 	e.g.
+			 	
+			 		Pointcut a(Foo param) : thisType(param);
+			 		Pointcut b(Foo realParam): call(void *.doSomething()) && a(realParam)
 			
-			// Step three: find that parameter in the expression of the referenced pointcut definition
-			return pointcutReference().getElement().expression().indexOfParameter(referencedParameter);
+			
+					=> Pointcut b(Foo realParam): call(void *.doSomething()) && thisType(realParam)
+			
+			*/
+			PointcutExpression<?> pointcutExpression = ((PointcutExpression<?>) getElement().expression()).expand();
+			
+			if (!pointcutReference().getActualParameters().isEmpty()) {
+				// Map is from->to
+				Map<String, String> parameterNamesMap = new HashMap<String, String>();
+				
+				Iterator<FormalParameter> pointcutParameters = getElement().parameters().iterator();
+				Iterator<Expression> referenceParameters = pointcutReference().getActualParameters().iterator();
+				
+				while (pointcutParameters.hasNext() && referenceParameters.hasNext()) {
+					Expression _nextReferenceParam  = referenceParameters.next();
+					
+					if (!(_nextReferenceParam instanceof NamedTargetExpression))
+						throw new ChameleonProgrammerException("Pointcut reference has a parameter that isn't a named target expr");
+					
+					NamedTargetExpression nextReferenceParam = (NamedTargetExpression) _nextReferenceParam;
+					FormalParameter nextPointcutParam = pointcutParameters.next();
+					
+					parameterNamesMap.put(nextPointcutParam.getName(), nextReferenceParam.name());
+				}
+				
+				// We know there are parameters, so we know the pointcut expression must be a ParameterExposurePointcutExpression, so the cast is no problem
+				((ParameterExposurePointcutExpression<?>) pointcutExpression).renameParameters(parameterNamesMap);
+			}
+			
+			return pointcutExpression;
+						
 		} catch (LookupException e) {
-			return -1;
+			// Should not be able to occur
+			e.printStackTrace();
+			
+			return null;
 		}
 	}
 }

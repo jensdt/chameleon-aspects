@@ -7,10 +7,7 @@ import chameleon.aspects.WeavingEncapsulator;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpressionAnd;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpressionNot;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpressionOr;
+import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
@@ -19,7 +16,6 @@ import chameleon.core.statement.Block;
 import chameleon.core.statement.Statement;
 import chameleon.core.variable.VariableDeclaration;
 import chameleon.oo.type.BasicTypeReference;
-import chameleon.support.member.simplename.operator.infix.InfixOperatorInvocation;
 import chameleon.support.member.simplename.operator.prefix.PrefixOperatorInvocation;
 import chameleon.support.statement.IfThenElseStatement;
 import chameleon.support.variable.LocalVariableDeclarator;
@@ -84,26 +80,21 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 			The naming registry for expressions
 	 * 	@return	The list of statements
 	 */
-	protected List<Statement> getDeclarations(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
+	protected List<Statement> getDeclarations(RuntimePointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
 		List<Statement> result = new ArrayList<Statement>();
 		
 		if (tree == null)
 			return result;
-		
-		// Select all runtime pointcut expressions, doesn't matter which order
-		List<RuntimePointcutExpression> expressions = tree.descendants(RuntimePointcutExpression.class);
-		if (tree instanceof RuntimePointcutExpression)
-			expressions.add((RuntimePointcutExpression) tree);
-				
+
+		// Get the tree in list-form, with the leaves first (postorder)
+		List<RuntimePointcutExpression> expressions = tree.toPostorderList();
+
 		// Get their expressions and assign them to booleans
 		for (RuntimePointcutExpression expression : expressions) {
-			RuntimePointcutExpression actualExpression = (RuntimePointcutExpression) expression.origin();
-			
-			if (!getAdviceTransformationProvider().supports(actualExpression))
-				continue;
+			RuntimePointcutExpression<?> actualExpression = (RuntimePointcutExpression<?>) expression.origin();
 			
 			RuntimeExpressionProvider transformer = getAdviceTransformationProvider().getRuntimeTransformer(actualExpression);
-			Expression runtimeCheck = transformer.getExpression(actualExpression);
+			Expression runtimeCheck = transformer.getExpression(actualExpression, expressionNames);
 			
 			// Create a boolean to assign the result to
 			LocalVariableDeclarator testDecl = new LocalVariableDeclarator(new BasicTypeReference("boolean"));
@@ -126,11 +117,11 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 	@param 	expressionNames
 	 * 			The naming registry for expressions
 	 */
-	protected Block addTest(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
+	protected Block addTest(RuntimePointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
 		return addTest(tree, expressionNames, getTest(tree, expressionNames));
 	}
 	
-	protected Block addTest(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames, IfThenElseStatement test) {
+	protected Block addTest(RuntimePointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames, IfThenElseStatement test) {
 		Block body = new Block();
 		
 		// Insert all the selected runtime expression-statements
@@ -143,9 +134,9 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 		return body;
 	}
 	
-	protected IfThenElseStatement getTest(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
-		// Now, convert the actual expression to the right test
-		Expression completeTest = convertToTest(tree, expressionNames);
+	protected IfThenElseStatement getTest(RuntimePointcutExpression<?> tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
+		// Now, convert the actual expression to the right test - get the name of the root
+		Expression completeTest = new NamedTargetExpression("_$" + expressionNames.getName((RuntimePointcutExpression<?>) tree.origin()));
 		
 		// Negate it, since we do the return of the original method if the expression returns false
 		PrefixOperatorInvocation negation = new PrefixOperatorInvocation("!", completeTest);
@@ -164,99 +155,6 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 */
 	protected abstract Block getTerminateBody();
 	
-
-	/**
-	 * 	Convert the given pointcut expression to a test. Requires that declarations are already in place.
-	 * 
-	 * 	Eg: if (Logger.enabled) && (thisType(Integer) || thisType(Double) => (_$logger && (_$type1 || _$type2)
-	 * 
-	 * 	@param 	tree
-	 * 			The pointcut expression tree to convert
-	 * 	@param 	expressionNames
-	 * 			The naming registry for expressions
-	 * 	@return	The test
-	 */
-	protected Expression convertToTest(PointcutExpression tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
-		if (tree instanceof PointcutExpressionAnd)
-			return convertToTest((PointcutExpressionAnd) tree, expressionNames);
-		if (tree instanceof PointcutExpressionOr)
-			return convertToTest((PointcutExpressionOr) tree, expressionNames);
-		if (tree instanceof PointcutExpressionNot)
-			return convertToTest((PointcutExpressionNot) tree, expressionNames);
-		if (tree instanceof RuntimePointcutExpression)
-			return convertToTest((RuntimePointcutExpression) tree, expressionNames);
-		
-		throw new RuntimeException();
-	}
-	
-	/**
-	 * 	Converts a not-pointcut expression to a test: negate the test contained in the sub expression
-	 * 
-	 * 	@param tree
-	 * 			The pointcut tree
-	 * 	@param 	expressionNames
-	 * 			The naming registry for expressions
-	 * 	@return	The test
-	 */
-	protected Expression convertToTest(PointcutExpressionNot tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
-		Expression sub = convertToTest(tree.expression(), expressionNames);
-		
-		PrefixOperatorInvocation test = new PrefixOperatorInvocation("!", sub);
-		
-		return test;
-	}
-	
-	/**
-	 * 	Converts an and-pointcut expression to a test: conjunct the tests contained in the sub expressions
-	 * 
-	 * 	@param tree
-	 * 			The pointcut tree
-	 * 	@param 	expressionNames
-	 * 			The naming registry for expressions
-	 * 	@return	The test
-	 */
-	protected Expression convertToTest(PointcutExpressionAnd tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
-		Expression left = convertToTest(tree.expression1(), expressionNames);
-		Expression right = convertToTest(tree.expression2(), expressionNames);
-		
-		InfixOperatorInvocation test = new InfixOperatorInvocation("&&", left);
-		test.addArgument(right);
-		
-		return test;
-	}
-	
-	/**
-	 * 	Converts an or-pointcut expression to a test: disjunct the tests contained in the sub expressions
-	 * 
-	 * 	@param tree
-	 * 			The pointcut tree
-	 * 	@param 	expressionNames
-	 * 			The naming registry for expressions
-	 * 	@return	The test
-	 */
-	protected Expression convertToTest(PointcutExpressionOr tree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
-		Expression left = convertToTest(tree.expression1(), expressionNames);
-		Expression right = convertToTest(tree.expression2(), expressionNames);
-		
-		InfixOperatorInvocation test = new InfixOperatorInvocation("||", left);
-		test.addArgument(right);
-		
-		return test;
-	}
-	
-	
-	/**
-	 * 	Converts a runtime pointcut expression to a test: just refer to its declaration as boolean expression
-	 * 
-	 * 	@param tree
-	 * 			The pointcut tree
-	 * 	@param 	expressionNames
-	 * 			The naming registry for expressions
-	 * 	@return	The test
-	 */
-	protected Expression convertToTest(RuntimePointcutExpression initialCheckTree, NamingRegistry<RuntimePointcutExpression> expressionNames) {
-		return new NamedTargetExpression("_$" + expressionNames.getName((RuntimePointcutExpression) initialCheckTree.origin()));
-	}
 
 	/**
 	 * 	Return the advice transformer

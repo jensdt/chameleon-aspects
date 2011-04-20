@@ -4,7 +4,7 @@ import java.util.List;
 
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
+import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.statement.Block;
 import chameleon.core.statement.Statement;

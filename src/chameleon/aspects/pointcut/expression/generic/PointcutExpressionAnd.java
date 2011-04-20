@@ -1,9 +1,15 @@
 package chameleon.aspects.pointcut.expression.generic;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.rejuse.predicate.SafePredicate;
+
 import chameleon.aspects.pointcut.expression.MatchResult;
+import chameleon.aspects.pointcut.expression.PointcutExpression;
+import chameleon.aspects.pointcut.expression.dynamicexpression.ParameterExposurePointcutExpression;
+import chameleon.aspects.pointcut.expression.staticexpression.StaticPointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.variable.FormalParameter;
@@ -16,10 +22,10 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E>> extends P
 
 	@Override
 	public MatchResult matches(Element joinpoint) throws LookupException {
-		MatchResult r1 = expression1().matches(joinpoint);
-		MatchResult r2 = expression2().matches(joinpoint);
+		boolean r1match = !(expression1() instanceof StaticPointcutExpression) ||  ((StaticPointcutExpression) expression1()).matches(joinpoint).isMatch();
+		boolean r2match = !(expression2() instanceof StaticPointcutExpression) ||  ((StaticPointcutExpression) expression2()).matches(joinpoint).isMatch();
 		
-		if (r1.isMatch() && r2.isMatch())
+		if (r1match && r2match)
 			return new MatchResult(this, joinpoint);
 		else
 			return MatchResult.noMatch();
@@ -54,28 +60,31 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E>> extends P
 	 *  => Result {B}
 	 */
 	@Override
-	public Set<Class> supportedJoinpoints() {
-		Set<Class> supported1 = expression1().supportedJoinpoints();
+	public Set<Class<? extends Element>> supportedJoinpoints() {
+		Set<Class<? extends Element>> supported1 = expression1().supportedJoinpoints();
 		
-		Set<Class> supportedJoinpoints = new HashSet<Class>();
+		Set<Class<? extends Element>> supportedJoinpoints = new HashSet<Class<? extends Element>>();
 		
-		for (Class c : supported1)
+		for (Class<? extends Element> c : supported1)
 			if (expression2().isSupported(c))
 				supportedJoinpoints.add(c);
 		
-		Set<Class> supported2 = expression2().supportedJoinpoints();
+		Set<Class<? extends Element>> supported2 = expression2().supportedJoinpoints();
 		
-		for (Class c : supported2)
+		for (Class<? extends Element> c : supported2)
 			if (!supportedJoinpoints.contains(c) && expression1().isSupported(c))
 				supportedJoinpoints.add(c);
 		
 		return supportedJoinpoints;
 	}
 	
+	/**
+	 * 	{@inheritDoc}
+	 */
 	@Override
-	public PointcutExpression getPrunedTree(Class<? extends PointcutExpression> type) {
-		PointcutExpression left = expression1().getPrunedTree(type);
-		PointcutExpression right = expression2().getPrunedTree(type);
+	public PointcutExpression<?> getPrunedTree(SafePredicate<PointcutExpression<?>> filter) {		
+		PointcutExpression<?> left = expression1().getPrunedTree(filter);
+		PointcutExpression<?> right = expression2().getPrunedTree(filter);
 		
 		if (left == null && right == null)
 			return null;
@@ -84,7 +93,7 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E>> extends P
 		if (left != null && right == null)
 			return left;
 		
-		return new PointcutExpressionAnd(left, right);
+		return new PointcutExpressionAnd<E>(left, right);
 	}
 	
 	@Override
@@ -104,28 +113,15 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E>> extends P
 
 	@Override
 	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
-		MatchResult r1 = expression1().matchesInverse(joinpoint);
-		
-		if (r1.isMatch())
-			return r1;
-		
-		return expression2().matchesInverse(joinpoint);
+		// FIXME
+		throw new RuntimeException("todo");
 	}
 	
 	/**
-	 * 	{@inheritDoc}
+	 *  {@inheritDoc}
 	 */
-	public boolean hasParameter(FormalParameter fp) {
-		return expression1().hasParameter(fp) || expression2().hasParameter(fp);
-	}
-	
 	@Override
-	public int indexOfParameter(FormalParameter fp) {
-		int expr1 = expression1().indexOfParameter(fp);
-		
-		if (expr1 == -1)
-			return expression2().indexOfParameter(fp);
-		else
-			return expr1;
+	public PointcutExpression<?> expand() {
+		return new PointcutExpressionAnd<E>(expression1().expand(), expression2().expand());
 	}
 }

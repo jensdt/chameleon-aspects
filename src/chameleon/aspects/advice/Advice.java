@@ -11,9 +11,7 @@ import org.rejuse.property.PropertyMutex;
 import org.rejuse.property.PropertySet;
 
 import chameleon.aspects.Aspect;
-import chameleon.aspects.pointcut.Pointcut;
-import chameleon.aspects.pointcut.PointcutReference;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
+import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.DeclarationSelector;
@@ -74,7 +72,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 	@Override
 	public LookupStrategy lexicalLookupStrategy(Element element)
 			throws LookupException {
-		if (pointcutExpression().equals(element) || body().equals(element)) {
+		if ((pointcutExpression() != null && pointcutExpression().equals(element)) || (body() != null && body().equals(element))) {
 			if (_lexical == null) {
 				_lexical = language().lookupFactory()
 						.createLexicalLookupStrategy(localLookupStrategy(),
@@ -104,12 +102,19 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 	public Aspect aspect() {
 		return (Aspect) parent();
 	}
+	
+	public PointcutExpression getExpandedPointcutExpression() {
+		PointcutExpression<?> expr = pointcutExpression();
+		setPointcutExpression(expr.expand());
+		
+		return pointcutExpression();
+	}
 
-	public PointcutExpression pointcutExpression() {
+	private PointcutExpression pointcutExpression() {
 		return _pointcutExpression.getOtherEnd();
 	}
 
-	public void setPointcutExpression(PointcutExpression pointcutref) {
+	public void setPointcutExpression(PointcutExpression<?> pointcutref) {
 		setAsParent(_pointcutExpression, pointcutref);
 	}
 
@@ -133,7 +138,7 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 			returnTypeClone = returnType().clone();
 
 		Advice clone = new Advice(returnTypeClone);
-		clone.setPointcutExpression(pointcutExpression().clone());
+		clone.setPointcutExpression((PointcutExpression) pointcutExpression().clone());
 		clone.setBody(body().clone());
 
 		for (FormalParameter p : formalParameters())

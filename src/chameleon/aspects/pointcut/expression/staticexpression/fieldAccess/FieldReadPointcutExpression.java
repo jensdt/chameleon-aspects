@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression.fieldAccess;
+package chameleon.aspects.pointcut.expression.staticexpression.fieldAccess;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,18 +8,17 @@ import java.util.Set;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.generic.StaticPointcutExpression;
+import chameleon.aspects.pointcut.expression.staticexpression.AbstractStaticPointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
-import chameleon.core.variable.FormalParameter;
 import chameleon.core.variable.RegularMemberVariable;
 import chameleon.oo.type.RegularType;
 import chameleon.oo.type.TypeReference;
 import chameleon.support.expression.AssignmentExpression;
 import chameleon.util.Util;
 
-public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E>> extends StaticPointcutExpression<E>  {
+public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E>> extends AbstractStaticPointcutExpression<E> {
 
 	public FieldReadPointcutExpression(TypeReference typeReference, FieldReference reference) {
 		setFieldReference(reference);
@@ -84,9 +83,6 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 	 */
 	@Override
 	public MatchResult matches(Element element) throws LookupException {
-		if (!(element instanceof NamedTargetExpression))
-			return MatchResult.noMatch();
-		
 		NamedTargetExpression joinpoint = (NamedTargetExpression) element;
 		
 		if (!(joinpoint.getElement() instanceof RegularMemberVariable))
@@ -124,8 +120,8 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 	}
 
 	@Override
-	public Set<Class> supportedJoinpoints() {
-		return Collections.<Class>singleton(NamedTargetExpression.class);
+	public Set<Class<? extends Element>> supportedJoinpoints() {
+		return Collections.<Class<? extends Element>>singleton(NamedTargetExpression.class);
 	}
 
 	@Override

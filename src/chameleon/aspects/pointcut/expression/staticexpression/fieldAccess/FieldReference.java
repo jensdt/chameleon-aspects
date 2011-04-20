@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression.fieldAccess;
+package chameleon.aspects.pointcut.expression.staticexpression.fieldAccess;
 
 import java.util.Collections;
 import java.util.List;

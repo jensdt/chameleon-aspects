@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression.catchclause;
+package chameleon.aspects.pointcut.expression.staticexpression.catchclause;
 
 import java.util.Collections;
 import java.util.List;

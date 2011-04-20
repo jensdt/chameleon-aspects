@@ -3,14 +3,12 @@ package chameleon.aspects.pointcut;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.Aspect;
-import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.generic.PointcutExpression;
-import chameleon.core.compilationunit.CompilationUnit;
+import chameleon.aspects.pointcut.expression.AbstractPointcutExpression;
+import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.declaration.DeclarationContainer;
 import chameleon.core.declaration.Signature;
@@ -109,7 +107,7 @@ public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> imp
 	public E clone() {
 		Pointcut<E> clone = new Pointcut<E>();
 		clone.setHeader((SimpleNameDeclarationWithParametersHeader) header().clone());
-		clone.setExpression(expression().clone());
+		clone.setExpression((PointcutExpression) expression().clone());
 		
 		return (E) clone;
 	}
