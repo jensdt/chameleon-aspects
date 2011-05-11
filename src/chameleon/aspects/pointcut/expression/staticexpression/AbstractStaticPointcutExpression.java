@@ -9,7 +9,6 @@ import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
-import chameleon.core.variable.FormalParameter;
 
 public abstract class AbstractStaticPointcutExpression<E extends AbstractStaticPointcutExpression<E>> extends AbstractPointcutExpression<E> implements StaticPointcutExpression<E> {
 	/**

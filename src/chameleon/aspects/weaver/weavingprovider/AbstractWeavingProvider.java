@@ -3,7 +3,6 @@ package chameleon.aspects.weaver.weavingprovider;
 import chameleon.aspects.WeavingEncapsulator;
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.element.Element;
 
 public abstract class AbstractWeavingProvider<T extends Element, U> implements WeavingProvider<T, U> {
@@ -11,7 +10,7 @@ public abstract class AbstractWeavingProvider<T extends Element, U> implements W
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public void execute(MatchResult<? extends PointcutExpression, T> joinpoint, U adviceResult, Advice advice, WeavingEncapsulator previous, WeavingEncapsulator next) {
+	public void execute(MatchResult<T> joinpoint, U adviceResult, Advice advice, WeavingEncapsulator previous, WeavingEncapsulator next) {
 		executeWeaving(joinpoint, adviceResult);
 	}
 	
@@ -23,5 +22,5 @@ public abstract class AbstractWeavingProvider<T extends Element, U> implements W
 	 * 	@param 	adviceResult
 	 * 			The code to weave in
 	 */
-	protected abstract void executeWeaving(MatchResult<? extends PointcutExpression, T> joinpoint, U adviceResult);
+	protected abstract void executeWeaving(MatchResult<T> joinpoint, U adviceResult);
 }

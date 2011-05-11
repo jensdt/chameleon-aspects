@@ -42,7 +42,7 @@ public class PointcutExpressionOr<E extends PointcutExpressionOr<E>> extends Poi
 			r2 = ((StaticPointcutExpression) expression2()).matches(joinpoint);
 		
 		if (r1.isMatch() && r2.isMatch())
-			return new MatchResult<PointcutExpressionOr<?>, Element<?>>(this, joinpoint);
+			return new MatchResult<Element<?>>(this, joinpoint);
 		else if (r1.isMatch())
 			return r1;
 		else if (r2.isMatch())

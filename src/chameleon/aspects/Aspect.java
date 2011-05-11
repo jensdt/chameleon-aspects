@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.rejuse.association.MultiAssociation;
+import org.rejuse.association.OrderedMultiAssociation;
+import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.pointcut.Pointcut;
@@ -20,19 +22,23 @@ import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.scope.Scope;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
+import chameleon.exception.ChameleonProgrammerException;
 import chameleon.exception.ModelException;
 import chameleon.oo.type.AspectOrType;
+import chameleon.util.Util;
 
 public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> implements AspectOrType<E, Declaration>, DeclarationContainer<E>, Declaration<E,  SimpleNameSignature, Declaration>{
 	
-	private String name;
-	
 	public Aspect(String name) {
-		setName(name);
+		this(new SimpleNameSignature(name));
+	}
+	
+	public Aspect(SimpleNameSignature sig) {
+		setSignature(sig);
 	}
 	
 	public String name() {
-		return name;
+		return signature().name();
 	}
 	
 	/**
@@ -42,9 +48,9 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> impleme
 		return _pointcuts.getOtherEnds();
 	}
 	
-	private MultiAssociation<Aspect, Pointcut> _pointcuts = new MultiAssociation<Aspect, Pointcut>(this);
+	private OrderedMultiAssociation<Aspect, Pointcut> _pointcuts = new OrderedMultiAssociation<Aspect, Pointcut>(this);
 	
-	public MultiAssociation<Aspect, Pointcut> pointcutLink() {
+	public OrderedMultiAssociation<Aspect, Pointcut> pointcutLink() {
 		return _pointcuts;
 	}
 	
@@ -75,11 +81,12 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> impleme
 		List<Element> children = new ArrayList<Element>();
 		children.addAll(pointcuts());
 		children.addAll(advices());
+		Util.addNonNull(signature(), children);
 		return children;
 	}
 
 	public E clone() {
-		Aspect<E> clone = new Aspect<E>(name());
+		Aspect<E> clone = new Aspect<E>(signature() == null ? null : signature().clone());
 		
 		for (Pointcut pc : pointcuts()) {
 			Pointcut pcClone = pc.clone();
@@ -122,22 +129,22 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> impleme
 		LookupStrategyFactory lookupFactory = language().lookupFactory();
 		return lookupFactory.createLexicalLookupStrategy(lookupFactory.createLocalLookupStrategy(this), this);
 	}
+	
+	private SingleAssociation<Aspect, SimpleNameSignature> _signature = new SingleAssociation<Aspect, SimpleNameSignature>(this);
 
 	@Override
 	public SimpleNameSignature signature() {
-		return new SimpleNameSignature(name());
+		return _signature.getOtherEnd();
 	}
 
 	@Override
 	public void setSignature(Signature signature) {
-		// TODO Auto-generated method stub
+		if (!(signature instanceof SimpleNameSignature))
+			throw new ChameleonProgrammerException("Exptected simpleNameSignature, got " + signature);
 		
+		setAsParent(_signature, (SimpleNameSignature) signature);
 	}
 
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	@Override
 	public Declaration<?, ?, Declaration> selectionDeclaration()
@@ -167,6 +174,11 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> impleme
 	@Override
 	public String getName() {
 		return name();
+	}
+
+	@Override
+	public void setName(String name) {
+		setSignature(new SimpleNameSignature(name));
 	}
 	
 	

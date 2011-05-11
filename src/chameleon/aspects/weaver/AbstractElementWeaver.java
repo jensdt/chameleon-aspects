@@ -45,7 +45,7 @@ public abstract class AbstractElementWeaver<T extends Element, U> implements Wea
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public final WeavingEncapsulator<T, U> start(Advice<?> advice, MatchResult<? extends PointcutExpression, T> joinpoint) throws LookupException {
+	public final WeavingEncapsulator<T, U> start(Advice<?> advice, MatchResult<T> joinpoint) throws LookupException {
 		WeavingEncapsulator<T, U> isHandled = handle(advice, joinpoint);
 		
 		if (isHandled != null)
@@ -62,11 +62,11 @@ public abstract class AbstractElementWeaver<T extends Element, U> implements Wea
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public WeavingEncapsulator<T, U> handle(Advice advice, MatchResult<? extends PointcutExpression, T> joinpoint) throws LookupException {
+	public WeavingEncapsulator<T, U> handle(Advice advice, MatchResult<T> joinpoint) throws LookupException {
 		if (!supports(advice, joinpoint))
 			return null;
 		
-		return weave(advice, joinpoint);
+		return getWeavingEncapsulator(advice, joinpoint);
 	}
 	
 	/**
@@ -75,7 +75,7 @@ public abstract class AbstractElementWeaver<T extends Element, U> implements Wea
 	 * 	True if the type of the join point is a sub type of a supported type, false otherwise
 	 */
 	@Override
-	public boolean supports(Advice advice, MatchResult<? extends PointcutExpression, T> result) throws LookupException {
+	public boolean supports(Advice advice, MatchResult<T> result) throws LookupException {
 		boolean supports = false;
 		
 		// Get all supported property sets for the advice
@@ -103,7 +103,7 @@ public abstract class AbstractElementWeaver<T extends Element, U> implements Wea
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public WeavingEncapsulator<T, U> weave(Advice advice, MatchResult<? extends PointcutExpression, T> matchResult) throws LookupException {
+	public WeavingEncapsulator<T, U> getWeavingEncapsulator(Advice advice, MatchResult<T> matchResult) throws LookupException {
 		WeavingEncapsulator<T, U> encapsulator = new WeavingEncapsulator<T, U>(getWeavingProvider(advice), getWeaveResultProvider(), getTransformationStrategy(advice, matchResult), advice, matchResult);
 
 		return encapsulator;

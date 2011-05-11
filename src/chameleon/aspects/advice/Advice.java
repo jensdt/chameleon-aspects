@@ -163,12 +163,6 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 	@Override
 	public VerificationResult verifySelf() {
 		VerificationResult result = Valid.create();
-//
-//		if (type() != AdviceTypeEnum.AROUND && returnType() != null)
-//			result = result.and(new BasicProblem(this,
-//					"No return type allowed for this type of advice"));
-
-		// FIXME: add type check for around advice
 
 		List<FormalParameter> unresolved = unresolvedParameters();
 		if (!unresolved.isEmpty()) {

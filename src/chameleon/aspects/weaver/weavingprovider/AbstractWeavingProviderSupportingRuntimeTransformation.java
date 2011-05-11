@@ -13,7 +13,7 @@ public abstract class AbstractWeavingProviderSupportingRuntimeTransformation<T e
 	 * 	{@inheritDoc}
 	 */
 	@Override
-	public final void execute(MatchResult<? extends PointcutExpression, T> joinpoint, U adviceResult, Advice advice, WeavingEncapsulator previous, WeavingEncapsulator next) {
+	public final void execute(MatchResult<T> joinpoint, U adviceResult, Advice advice, WeavingEncapsulator previous, WeavingEncapsulator next) {
 		initialiseRuntimeTransformers(joinpoint);
 		Coordinator<T> catchCoordinator = getCoordinator(joinpoint, previous, next);
 		

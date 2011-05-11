@@ -1,13 +1,12 @@
 package chameleon.aspects;
 
+import java.util.AbstractSequentialList;
 import java.util.Iterator;
 
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.advice.types.translation.AdviceTransformationProvider;
 import chameleon.aspects.advice.types.weaving.AdviceWeaveResultProvider;
-import chameleon.aspects.pointcut.expression.AbstractPointcutExpression;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.aspects.weaver.weavingprovider.WeavingProvider;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
@@ -23,7 +22,7 @@ import chameleon.core.lookup.LookupException;
  *  - The advice that has to be woven
  *  
  *  Furthermore, since multiple advices can be applied to the same joinpoint (with different providers), all encapsulators for a given joinpoint
- *  are organised in a double linked list. This is needed because sometimes, the result of the providers depends on the next advice.
+ *  are organised in a double linked list. This is needed because sometimes, the result of the providers depends on the next or previous advice.
  *  
  *  This class ultimately starts the weaving process through its start method.
  *  
@@ -46,12 +45,12 @@ public class WeavingEncapsulator<T extends Element, U> {
 	/**
 	 * 	The transformation provider
 	 */
-	private AdviceTransformationProvider<T> adviceTransformationProvider;
+	private AdviceTransformationProvider adviceTransformationProvider;
 	
 	/**
 	 * 	The joinpoint
 	 */
-	private MatchResult<? extends PointcutExpression, T> joinpoint;
+	private MatchResult<T> joinpoint;
 	
 	/**
 	 * 	The advice
@@ -61,12 +60,12 @@ public class WeavingEncapsulator<T extends Element, U> {
 	/**
 	 * 	The next encapsulator in the chain
 	 */
-	private WeavingEncapsulator next;
+	private WeavingEncapsulator<T, ?> next;
 	
 	/**
 	 * 	The previous encapsulator in the chain
 	 */
-	private WeavingEncapsulator previous;
+	private WeavingEncapsulator<T, ?> previous;
 	
 	/**
 	 * 	Constructor
@@ -82,7 +81,7 @@ public class WeavingEncapsulator<T extends Element, U> {
 	 * 	@param 	joinpoint
 	 * 			The joinpoint
 	 */
-	public WeavingEncapsulator(WeavingProvider<T, U> weavingProvider, AdviceWeaveResultProvider<T, U> weavingResultProvider, AdviceTransformationProvider<T> adviceTransformationProvider, Advice<?> advice, MatchResult<? extends PointcutExpression, T> joinpoint) {
+	public WeavingEncapsulator(WeavingProvider<T, U> weavingProvider, AdviceWeaveResultProvider<T, U> weavingResultProvider, AdviceTransformationProvider adviceTransformationProvider, Advice<?> advice, MatchResult<T> joinpoint) {
 		this.weavingProvider = weavingProvider;
 		this.weavingResultProvider = weavingResultProvider;
 		this.adviceTransformationProvider = adviceTransformationProvider;
@@ -97,13 +96,15 @@ public class WeavingEncapsulator<T extends Element, U> {
 	 */
 	public void start() throws LookupException {
 		// Get the weaving result
-		U weavingResult = getWeavingResultProvider().getWeaveResult(getAdvice(), (MatchResult) getJoinpoint());
+		U weavingResult = getWeavingResultProvider().getWeaveResult(getAdvice(), getJoinpoint());
+		
+		// Transform the advice
+		getAdviceTransformationProvider().execute(getAdvice(), getJoinpoint(), previous, next);
+		
 		
 		// Now call the weaving provider to combine the joinpoint and the weaving result
 		getWeavingProvider().execute(getJoinpoint(), weavingResult, getAdvice(), previous, next);
 		
-		// Transform the advice
-		getAdviceTransformationProvider().start(previous, next);
 		
 		// Call the next weaver in the chain
 		if (next != null)
@@ -116,7 +117,7 @@ public class WeavingEncapsulator<T extends Element, U> {
 	 * 	@param 	next
 	 * 			The next weaving encapsulator
 	 */
-	private void setNext(WeavingEncapsulator next) {
+	private void setNext(WeavingEncapsulator<T, ?> next) {
 		this.next = next;
 	}
 	
@@ -126,7 +127,7 @@ public class WeavingEncapsulator<T extends Element, U> {
 	 * @param 	previous
 	 * 			The previous weaving encapsulator
 	 */
-	private void setPrevious(WeavingEncapsulator previous) {
+	private void setPrevious(WeavingEncapsulator<T, ?> previous) {
 		this.previous = previous;
 	}
 	
@@ -183,7 +184,7 @@ public class WeavingEncapsulator<T extends Element, U> {
 	 * 
 	 * 	@return	The advice transformation provider
 	 */
-	public AdviceTransformationProvider<T> getAdviceTransformationProvider() {
+	public AdviceTransformationProvider getAdviceTransformationProvider() {
 		return adviceTransformationProvider;
 	}
 	
@@ -192,7 +193,7 @@ public class WeavingEncapsulator<T extends Element, U> {
 	 * 
 	 * 	@return	The joinpoint
 	 */
-	public MatchResult<? extends PointcutExpression, T> getJoinpoint() {
+	public MatchResult<T> getJoinpoint() {
 		return joinpoint;
 	}
 

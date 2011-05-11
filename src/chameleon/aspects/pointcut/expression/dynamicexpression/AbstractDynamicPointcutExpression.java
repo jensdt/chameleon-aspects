@@ -22,7 +22,7 @@ public abstract class AbstractDynamicPointcutExpression<E extends AbstractDynami
 		for (Class c : (Set<Class<? extends Element>>) supportedJoinpoints()) {
 			List<Element> descendants = compilationUnit.descendants(c);
 			for (Element mi : descendants) {
-				results.add(new MatchResult<AbstractDynamicPointcutExpression<E>, Element>(this, mi));
+				results.add(new MatchResult<Element>(this, mi));
 			}
 		}
 		return results; 

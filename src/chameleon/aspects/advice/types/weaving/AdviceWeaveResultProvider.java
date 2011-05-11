@@ -2,7 +2,6 @@ package chameleon.aspects.advice.types.weaving;
 
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 
@@ -26,5 +25,5 @@ public interface AdviceWeaveResultProvider<T extends Element, U> {
 	 * 	@return	The result of weaving
 	 * 	@throws LookupException
 	 */
-	public U getWeaveResult(Advice advice, MatchResult<? extends PointcutExpression, ? extends T> joinpoint) throws LookupException;
+	public U getWeaveResult(Advice advice, MatchResult<T> joinpoint) throws LookupException;
 }

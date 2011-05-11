@@ -26,7 +26,7 @@ public class PointcutExpressionAnd<E extends PointcutExpressionAnd<E>> extends P
 		boolean r2match = !(expression2() instanceof StaticPointcutExpression) ||  ((StaticPointcutExpression) expression2()).matches(joinpoint).isMatch();
 		
 		if (r1match && r2match)
-			return new MatchResult(this, joinpoint);
+			return new MatchResult<Element>(this, joinpoint);
 		else
 			return MatchResult.noMatch();
 	}

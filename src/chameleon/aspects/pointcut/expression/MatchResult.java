@@ -2,38 +2,38 @@ package chameleon.aspects.pointcut.expression;
 
 import chameleon.core.element.Element;
 
-public class MatchResult<T extends PointcutExpression, U extends Element> {
+public class MatchResult<T extends Element> {
 	private boolean match;
-	private U joinpoint;
-	private T expression;
+	private T joinpoint;
+	private PointcutExpression<?> expression;
 	
-	public MatchResult(T expression, U joinpoint) {
+	public MatchResult(PointcutExpression<?> expression, T joinpoint) {
 		this(true, expression, joinpoint);
 	}
 	
-	public MatchResult(boolean match, T expression, U joinpoint) {
+	public MatchResult(boolean match, PointcutExpression<?> expression, T joinpoint) {
 		setExpression(expression);
 		setJoinpoint(joinpoint);
 		setMatch(match);
 	}
 	
-	public static <T extends PointcutExpression, U extends Element> MatchResult<T, U> noMatch() {
-		return new MatchResult<T, U>(false, null, null);
+	public static <U extends Element> MatchResult<U> noMatch() {
+		return new MatchResult<U>(false, null, null);
 	}
 
-	public U getJoinpoint() {
+	public T getJoinpoint() {
 		return joinpoint;
 	}
 
-	public T getExpression() {
+	public PointcutExpression<?> getExpression() {
 		return expression;
 	}
 
-	private void setJoinpoint(U joinpoint) {
+	private void setJoinpoint(T joinpoint) {
 		this.joinpoint = joinpoint;
 	}
 
-	private void setExpression(T expression) {
+	private void setExpression(PointcutExpression<?> expression) {
 		this.expression = expression;
 	}
 	

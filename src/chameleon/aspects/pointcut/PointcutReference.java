@@ -40,10 +40,10 @@ public class PointcutReference<E extends PointcutReference<E>> extends
 	
 	@Override
 	public DeclarationSelector<Declaration> selector() throws LookupException {
-		return new SimpleNameMethodSelector();
+		return new SimpleNamePointcutSelector();
 	}
 
-	public class SimpleNameMethodSelector<D extends Pointcut> extends SimpleNameCrossReferenceWithArgumentsSelector<D> {
+	public class SimpleNamePointcutSelector<D extends Pointcut> extends SimpleNameCrossReferenceWithArgumentsSelector<D> {
 
 		@Override
 		public String name() {

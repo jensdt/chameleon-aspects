@@ -2,13 +2,13 @@ package chameleon.aspects.pointcut.expression.staticexpression.catchclause;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;
 import chameleon.core.statement.Block;
 import chameleon.core.statement.Statement;
-import chameleon.support.statement.CatchClause;
 import chameleon.support.statement.EmptyStatement;
 
 public class EmptyCatchClausePointcutExpression<E extends EmptyCatchClausePointcutExpression<E>> extends CatchClausePointcutExpression<E> {
@@ -20,21 +20,17 @@ public class EmptyCatchClausePointcutExpression<E extends EmptyCatchClausePointc
 
 	@Override
 	public MatchResult matches(Element element) throws LookupException {
-		if (!(element instanceof CatchClause))
+		if (!super.matches(element).isMatch())
 			return MatchResult.noMatch();
 		
-		CatchClause joinpoint = (CatchClause) element;
-		// Note: when parsing Java, the 'statement' of a catch clause is *always* a block (see the parser)
-		// This is a bit more general
-		Statement st = joinpoint.statement();
+		Statement joinpoint = (Statement) element;
 		
-		if (st instanceof EmptyStatement)
-			return new MatchResult<EmptyCatchClausePointcutExpression, CatchClause>(this, joinpoint);
+		if (joinpoint instanceof EmptyStatement)
+			return new MatchResult(this, joinpoint);
 		
-		if (st instanceof Block && ((Block) st).statements().isEmpty())
-			return new MatchResult<EmptyCatchClausePointcutExpression, CatchClause>(this, joinpoint);
+		if (element instanceof Block && ((Block) joinpoint).statements().isEmpty())
+			return new MatchResult(this, joinpoint);
 		
-		//return joinpoint.statement();
 		return MatchResult.noMatch();
 	}
 

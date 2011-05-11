@@ -57,26 +57,28 @@ public class ProceedCall extends Expression {
 		
 		if (advice == null) {
 			result = result.and(new BasicProblem(this, "Proceed calls are only allowed in advice bodies."));
-		} else {
-			Iterator<FormalParameter> adviceIterator = advice.formalParameters().iterator();
-			Iterator<Expression> proceedIterator = getActualParameters().iterator();
-			
-			while (adviceIterator.hasNext() && proceedIterator.hasNext()) {
-				FormalParameter param = adviceIterator.next();
-				Expression expr = proceedIterator.next();
-				
-				try {
-					if (!(expr.getType().sameAs(param.getType()) || expr.getType().subTypeOf(param.getType())))
-						result = result.and(new BasicProblem(this, "Incompatible types: given " + expr.getType().getName() + ", expected " + param.getType().getName()));
-				} catch (LookupException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-			if (adviceIterator.hasNext() || proceedIterator.hasNext())
-				result = result.and(new BasicProblem(this, "Expecting " + advice.formalParameters().size() + " parameter(s), found " + getActualParameters().size()));
-		}
+		} 
+		// FIXME: optional validation, should check what is proceeded and how many parameters it needs
+//		else {
+//			Iterator<FormalParameter> adviceIterator = advice.formalParameters().iterator();
+//			Iterator<Expression> proceedIterator = getActualParameters().iterator();
+//			
+//			while (adviceIterator.hasNext() && proceedIterator.hasNext()) {
+//				FormalParameter param = adviceIterator.next();
+//				Expression expr = proceedIterator.next();
+//				
+//				try {
+//					if (!(expr.getType().sameAs(param.getType()) || expr.getType().subTypeOf(param.getType())))
+//						result = result.and(new BasicProblem(this, "Incompatible types: given " + expr.getType().getName() + ", expected " + param.getType().getName()));
+//				} catch (LookupException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//			
+//			if (adviceIterator.hasNext() || proceedIterator.hasNext())
+//				result = result.and(new BasicProblem(this, "Expecting " + advice.formalParameters().size() + " parameter(s), found " + getActualParameters().size()));
+//		}
 		
 		return result;
 	}

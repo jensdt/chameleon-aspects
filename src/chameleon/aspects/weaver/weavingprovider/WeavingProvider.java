@@ -3,7 +3,6 @@ package chameleon.aspects.weaver.weavingprovider;
 import chameleon.aspects.WeavingEncapsulator;
 import chameleon.aspects.advice.Advice;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.element.Element;
 
 /**
@@ -30,5 +29,5 @@ public interface WeavingProvider<T extends Element, U> {
 	 * 	@param	next
 	 * 			If there are multiple matches for this join point, the next one in the chain
 	 */
-	public void execute(MatchResult<? extends PointcutExpression, T> joinpoint, U adviceResult, Advice advice, WeavingEncapsulator previous, WeavingEncapsulator next);
+	public void execute(MatchResult<T> joinpoint, U adviceResult, Advice advice, WeavingEncapsulator previous, WeavingEncapsulator next);
 }

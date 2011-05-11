@@ -7,7 +7,6 @@ import chameleon.aspects.WeavingEncapsulator;
 import chameleon.aspects.advice.runtimetransformation.transformationprovider.RuntimeExpressionProvider;
 import chameleon.aspects.namingRegistry.NamingRegistry;
 import chameleon.aspects.pointcut.expression.MatchResult;
-import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.aspects.pointcut.expression.generic.RuntimePointcutExpression;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
@@ -39,7 +38,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	/**
 	 * 	The matched joinpoint
 	 */
-	private MatchResult<?, ?> matchResult;
+	private MatchResult<? extends Element> matchResult;
 	
 	private WeavingEncapsulator nextWeavingEncapsulator;
 	private WeavingEncapsulator previousWeavingEncapsulator;
@@ -52,7 +51,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 	@param 	matchResult
 	 * 			The join point
 	 */
-	public AbstractCoordinator(RuntimeTransformationProvider adviceTransformationProvider, MatchResult<?, ?> matchResult, WeavingEncapsulator previousWeavingEncapsulator, WeavingEncapsulator nextWeavingEncapsulator) {
+	public AbstractCoordinator(RuntimeTransformationProvider adviceTransformationProvider, MatchResult<? extends Element> matchResult, WeavingEncapsulator previousWeavingEncapsulator, WeavingEncapsulator nextWeavingEncapsulator) {
 		this.adviceTransformationProvider = adviceTransformationProvider;
 		this.matchResult = matchResult;
 		this.nextWeavingEncapsulator = nextWeavingEncapsulator;
@@ -64,7 +63,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 
 	 * 	@return	the join point
 	 */
-	public MatchResult<? extends PointcutExpression, ? extends Element> getMatchResult() {
+	public MatchResult<? extends Element> getMatchResult() {
 		return matchResult;
 	}
 	
@@ -93,7 +92,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 		for (RuntimePointcutExpression expression : expressions) {
 			RuntimePointcutExpression<?> actualExpression = (RuntimePointcutExpression<?>) expression.origin();
 			
-			RuntimeExpressionProvider transformer = getAdviceTransformationProvider().getRuntimeTransformer(actualExpression);
+			RuntimeExpressionProvider transformer = getAdviceTransformationProvider().getRuntimeExpressionProvider(actualExpression);
 			Expression runtimeCheck = transformer.getExpression(actualExpression, expressionNames);
 			
 			// Create a boolean to assign the result to
@@ -153,7 +152,7 @@ public abstract class AbstractCoordinator<T extends Element<?>> implements Coord
 	 * 
 	 * 	@return	The body of the if clause
 	 */
-	protected abstract Block getTerminateBody();
+	protected abstract Statement getTerminateBody();
 	
 
 	/**

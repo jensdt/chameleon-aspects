@@ -12,9 +12,9 @@ import chameleon.core.element.Element;
 // FIXME: documentation
 public interface RuntimeTransformationProvider<T extends Element> {
 	public boolean supports(PointcutExpression<?> pointcutExpression);
-	public void initialiseRuntimeTransformers(MatchResult<? extends PointcutExpression, ? extends Element> joinpoint);
-	public RuntimeExpressionProvider getRuntimeTransformer(RuntimePointcutExpression pointcutExpression);
-	public Coordinator<T> getCoordinator(MatchResult<? extends PointcutExpression, ? extends Element> joinpoint, WeavingEncapsulator previous, WeavingEncapsulator next);
+	public void initialiseRuntimeTransformers(MatchResult<? extends Element> joinpoint);
+	public Coordinator<T> getCoordinator(MatchResult<? extends Element> joinpoint, WeavingEncapsulator previous, WeavingEncapsulator next);
 	
+	public RuntimeExpressionProvider getRuntimeExpressionProvider(RuntimePointcutExpression pointcutExpression);
 	public RuntimeParameterExposureProvider getRuntimeParameterInjectionProvider(ParameterExposurePointcutExpression<?> expression);
 }

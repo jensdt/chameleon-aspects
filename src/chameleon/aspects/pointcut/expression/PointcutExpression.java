@@ -1,13 +1,11 @@
 package chameleon.aspects.pointcut.expression;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.rejuse.predicate.SafePredicate;
 
 import chameleon.aspects.pointcut.Pointcut;
-import chameleon.aspects.pointcut.PointcutReference;
 import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.element.Element;
 import chameleon.core.lookup.LookupException;

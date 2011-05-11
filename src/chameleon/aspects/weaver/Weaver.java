@@ -33,7 +33,7 @@ import chameleon.core.lookup.LookupException;
  *				The TranslationStrategy for method invocations is to create a new static method in a new class (denoting the aspect), if it doesn't exist yet.
  *				Note that, since the method is different for different advice types, this is differed by advice type.
  *		
- *		-	Third, it connects these two through a <em>WeavingProvider</em>. This outlines how the first two elements are connected.
+ *		-	Third, it connects these two through a <em>WeavingProvider</em>. This outlines how the join point and the weaveResultProvider are connected.
  *
  *				Example 1: MethodInvocations
  *				Remember, the join point is a method invocation and so is the result of the weaver. We simply swap these to correctly implement
@@ -65,7 +65,7 @@ public interface Weaver<T extends Element, U> {
 	 * 			The join point this advice was matched on
 	 * 	@return The object responsible for transformation
 	 */
-	public AdviceTransformationProvider<T> getTransformationStrategy(Advice advice, MatchResult<? extends PointcutExpression, ? extends Element> joinpoint);
+	public AdviceTransformationProvider getTransformationStrategy(Advice advice, MatchResult<T> joinpoint);
 	
 	/**
 	 * 	Get the object responsible for tying the weave result and original join point together
@@ -86,7 +86,7 @@ public interface Weaver<T extends Element, U> {
 	 * 			the advice
 	 * 	@return	True if this weaver supports the join point and advice type, false otherwise
 	 */
-	public boolean supports(Advice advice, MatchResult<? extends PointcutExpression, T> result) throws LookupException;
+	public boolean supports(Advice advice, MatchResult<T> result) throws LookupException;
 	
 	/**
 	 * 	Get a list of all supported types by this weaver
@@ -100,11 +100,11 @@ public interface Weaver<T extends Element, U> {
 	 * 
 	 * 	@param 	advice
 	 * 			The advice to weave
-	 * 	@param 	joinpoints
-	 * 			The join points belonging to that advice
+	 * 	@param 	joinpoint
+	 * 			The join point belonging to that advice
 	 * 	@throws LookupException
 	 */
-	public WeavingEncapsulator<T, U> weave(Advice advice, MatchResult<? extends PointcutExpression, T> joinpoints) throws LookupException;
+	public WeavingEncapsulator<T, U> getWeavingEncapsulator(Advice advice, MatchResult<T> joinpoint) throws LookupException;
 	
 	/**
 	 * 	Get the list of supported property sets by this weaver
@@ -126,7 +126,7 @@ public interface Weaver<T extends Element, U> {
 	 * 			The join points belonging to that advice
 	 * 	@throws LookupException
 	 */
-	public WeavingEncapsulator<T, U> start(Advice<?> advice, MatchResult<? extends PointcutExpression, T> joinpoint) throws LookupException;
+	public WeavingEncapsulator<T, U> start(Advice<?> advice, MatchResult<T> joinpoint) throws LookupException;
 	
 	/**
 	 * 	Handle the given compilation unit, advice and join point. Used for the Chain Of Responsibility - return true if this weaver can weave
@@ -142,7 +142,7 @@ public interface Weaver<T extends Element, U> {
 	 * 
 	 * @throws 	LookupException
 	 */
-	public WeavingEncapsulator<T, U> handle(Advice advice, MatchResult<? extends PointcutExpression, T> joinpoint) throws LookupException;
+	public WeavingEncapsulator<T, U> handle(Advice advice, MatchResult<T> joinpoint) throws LookupException;
 
 	/**
 	 * 	Get the next weaver in the chain
