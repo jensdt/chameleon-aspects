@@ -1,14 +1,13 @@
 package chameleon.aspects.pointcut.expression.staticexpression.fieldAccess;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.staticexpression.AbstractStaticPointcutExpression;
+import chameleon.aspects.pointcut.expression.staticexpression.MemberReference;
 import chameleon.core.element.Element;
 import chameleon.core.expression.NamedTargetExpression;
 import chameleon.core.lookup.LookupException;
@@ -20,7 +19,7 @@ import chameleon.util.Util;
 
 public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E>> extends AbstractStaticPointcutExpression<E> {
 
-	public FieldReadPointcutExpression(TypeReference typeReference, FieldReference reference) {
+	public FieldReadPointcutExpression(TypeReference typeReference, MemberReference reference) {
 		setFieldReference(reference);
 		setTypeReference(typeReference);
 	}
@@ -29,14 +28,14 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 		setAsParent(_typeReference, typeReference);
 	}
 
-	private void setFieldReference(FieldReference reference) {
+	private void setFieldReference(MemberReference reference) {
 		setAsParent(_fieldReference, reference);
 	}
 
-	private SingleAssociation<FieldReadPointcutExpression<E>, FieldReference> _fieldReference = new SingleAssociation<FieldReadPointcutExpression<E>, FieldReference>(this);
+	private SingleAssociation<FieldReadPointcutExpression<E>, MemberReference> _fieldReference = new SingleAssociation<FieldReadPointcutExpression<E>, MemberReference>(this);
 	private SingleAssociation<FieldReadPointcutExpression<E>, TypeReference> _typeReference = new SingleAssociation<FieldReadPointcutExpression<E>, TypeReference>(this);
 	
-	public FieldReference fieldReference() {
+	public MemberReference fieldReference() {
 		return _fieldReference.getOtherEnd();
 	}
 	
@@ -107,7 +106,7 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 
 	@Override
 	public E clone() {
-		FieldReference fieldRefClone = null;
+		MemberReference fieldRefClone = null;
 		TypeReference typeRefClone = null;
 		
 		if (fieldReference() != null)
@@ -120,13 +119,10 @@ public class FieldReadPointcutExpression<E extends FieldReadPointcutExpression<E
 	}
 
 	@Override
-	public Set<Class<? extends Element>> supportedJoinpoints() {
-		return Collections.<Class<? extends Element>>singleton(NamedTargetExpression.class);
-	}
-
-	@Override
-	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
+	public boolean isSupported(Class<? extends Element> c) {
+		if (NamedTargetExpression.class.isAssignableFrom(c))
+			return true;
+		
+		return false;
 	}
 }

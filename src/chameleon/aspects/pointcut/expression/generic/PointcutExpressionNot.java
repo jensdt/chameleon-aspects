@@ -21,17 +21,29 @@ public class PointcutExpressionNot<E extends PointcutExpressionNot<E>> extends P
 	@Override
 	public MatchResult matches(Element joinpoint) throws LookupException {
 		if (!(expression() instanceof StaticPointcutExpression))
-			return new MatchResult(expression(), joinpoint);
+			return new MatchResult(this, joinpoint);
+		
+		if (!((StaticPointcutExpression) expression()).isSupported(joinpoint.getClass()))
+			return new MatchResult(this, joinpoint);
+		
+		MatchResult matches = ((StaticPointcutExpression) expression()).matches(joinpoint);
+		
+		if (matches.isMatch())
+			return MatchResult.noMatch();
 		else
-			return ((StaticPointcutExpression) expression()).matchesInverse(joinpoint);
+			return new MatchResult(this, joinpoint);
 	}
 	
+	/**
+	 * 	{@inheritDoc}
+	 * 
+	 * 	A not pointcut expression must support everything:
+	 * 		* Pointcuts that are of a different type as supported by expression() are supported since they match
+	 * 		* Pointcuts that are of the same type as supported by expression(), but for which the matches method fails, are supported since they match
+	 */
 	@Override
-	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
-		if (!(expression() instanceof StaticPointcutExpression))
-			return new MatchResult(expression(), joinpoint);
-		else
-			return ((StaticPointcutExpression) expression()).matches(joinpoint);
+	public boolean isSupported(Class<? extends Element> c) {
+		return true;
 	}
 
 	@Override
@@ -52,14 +64,17 @@ public class PointcutExpressionNot<E extends PointcutExpressionNot<E>> extends P
 		return new PointcutExpressionNot<E>(expression);
 	}
 	
+	/**
+	 * 	{@inheritDoc}
+	 */
 	@Override
-	public PointcutExpression removeFromTree(Class<? extends PointcutExpression> type) {
-		PointcutExpression expression = expression().removeFromTree(type);
+	public PointcutExpression<?> removeFromTree(SafePredicate<PointcutExpression<?>> filter) {
+		PointcutExpression<?> expression = expression().removeFromTree(filter);
 		
 		if (expression == null)
 			return null;
 		
-		return new PointcutExpressionNot(expression);
+		return new PointcutExpressionNot<E>(expression);
 	}
 
 	@Override

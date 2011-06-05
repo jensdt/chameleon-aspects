@@ -1,4 +1,4 @@
-package chameleon.aspects.pointcut.expression.staticexpression.fieldAccess;
+package chameleon.aspects.pointcut.expression.staticexpression;
 
 import java.util.Collections;
 import java.util.List;
@@ -8,11 +8,11 @@ import chameleon.core.element.ElementImpl;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 
-public class FieldReference<E extends FieldReference<E>> extends ElementImpl<E> {
+public class MemberReference<E extends MemberReference<E>> extends ElementImpl<E> {
 
 	private String reference;
 	
-	public FieldReference(String reference) {
+	public MemberReference(String reference) {
 		this.reference = reference;
 	}
 	
@@ -27,7 +27,7 @@ public class FieldReference<E extends FieldReference<E>> extends ElementImpl<E> 
 
 	@Override
 	public E clone() {
-		return (E) new FieldReference(reference);
+		return (E) new MemberReference(reference);
 	}
 
 	@Override

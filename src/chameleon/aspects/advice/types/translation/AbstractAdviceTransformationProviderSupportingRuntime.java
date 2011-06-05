@@ -16,7 +16,7 @@ public abstract class AbstractAdviceTransformationProviderSupportingRuntime<T ex
 	 * 	Subclasses should override transform instead of execute. Execute also starts the runtime transformations.
 	 */
 	@Override
-	public final void execute(Advice advice, MatchResult joinpoint, WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator) throws LookupException {
+	public void execute(Advice advice, MatchResult joinpoint, WeavingEncapsulator previousEncapsulator, WeavingEncapsulator nextEncapsulator) throws LookupException {
 		setAdvice(advice);
 		setJoinpoint(joinpoint);
 		T createdElement = transform(previousEncapsulator, nextEncapsulator);

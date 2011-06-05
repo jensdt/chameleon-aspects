@@ -24,10 +24,9 @@ import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
 import chameleon.exception.ChameleonProgrammerException;
 import chameleon.exception.ModelException;
-import chameleon.oo.type.AspectOrType;
 import chameleon.util.Util;
 
-public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> implements AspectOrType<E, Declaration>, DeclarationContainer<E>, Declaration<E,  SimpleNameSignature, Declaration>{
+public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, Declaration<E,  SimpleNameSignature>{
 	
 	public Aspect(String name) {
 		this(new SimpleNameSignature(name));
@@ -147,7 +146,7 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> impleme
 
 
 	@Override
-	public Declaration<?, ?, Declaration> selectionDeclaration()
+	public Declaration<?, ?> selectionDeclaration()
 			throws LookupException {
 		// TODO Auto-generated method stub
 		return null;
@@ -172,14 +171,7 @@ public class Aspect<E extends Aspect<E>> extends NamespaceElementImpl<E> impleme
 	}
 
 	@Override
-	public String getName() {
-		return name();
-	}
-
-	@Override
 	public void setName(String name) {
 		setSignature(new SimpleNameSignature(name));
 	}
-	
-	
 }

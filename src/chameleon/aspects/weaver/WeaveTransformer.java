@@ -1,6 +1,7 @@
 package chameleon.aspects.weaver;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,10 +26,10 @@ public abstract class WeaveTransformer {
 	 * 	Constructor
 	 */
 	public WeaveTransformer() {
-		initialiseWeavers();
+		setElementWeaver(initialiseWeavers());
 	}
 	
-	protected abstract void initialiseWeavers();
+	protected abstract Weaver initialiseWeavers();
 
 	/**
 	 * 	Weave the given compilation unit
@@ -39,12 +40,11 @@ public abstract class WeaveTransformer {
 	 * 			All compilation units that contain aspects
 	 * 	@param 	otherCompilationUnits
 	 * 			All other compilation units
-	 * 	@return	The modified (woven) compilation unit
 	 * 	@throws LookupException
 	 */
-	public CompilationUnit weave(CompilationUnit compilationUnit, List<CompilationUnit> aspectCompilationUnits, List<CompilationUnit> otherCompilationUnits) throws LookupException {
+	public void weave(CompilationUnit compilationUnit, Collection<CompilationUnit> aspectCompilationUnits) throws LookupException {
 		if (!compilationUnit.hasDescendant(Aspect.class)) {
-			Map<Element, List<WeavingEncapsulator>> weavingMap = weaveRegularType(compilationUnit, aspectCompilationUnits, otherCompilationUnits);
+			Map<Element, List<WeavingEncapsulator>> weavingMap = getAllWeavers(compilationUnit, aspectCompilationUnits);
 			
 			for (Entry<Element, List<WeavingEncapsulator>> entry : weavingMap.entrySet()) {
 				List<WeavingEncapsulator> weavingEncapsulators = entry.getValue();
@@ -59,8 +59,6 @@ public abstract class WeaveTransformer {
 				weavingChain.start();
 			}
 		}
-		
-		return compilationUnit;
 	}
 	
 	/**
@@ -71,12 +69,10 @@ public abstract class WeaveTransformer {
 	 * 			The compilation unit to weave
 	 * 	@param 	aspectCompilationUnits
 	 * 			All compilation units that contain aspects
-	 * 	@param 	otherCompilationUnits
-	 * 			All other compilation units
 	 * 	@return	The map of joinpoints to weaving encapsulators that handle this joinpoint
 	 * 	@throws LookupException
 	 */
-	private Map<Element, List<WeavingEncapsulator>> weaveRegularType(CompilationUnit compilationUnit, List<CompilationUnit> aspectCompilationUnits, List<CompilationUnit> otherCompilationUnits) throws LookupException {
+	private Map<Element, List<WeavingEncapsulator>> getAllWeavers(CompilationUnit compilationUnit, Collection<CompilationUnit> aspectCompilationUnits) throws LookupException {
 		// Get a list of all advices
 		List<Advice> advices = new ArrayList<Advice>();
 		for (CompilationUnit cu : aspectCompilationUnits) {
@@ -87,7 +83,7 @@ public abstract class WeaveTransformer {
 		Map<Element, List<WeavingEncapsulator>> weavingMap = new HashMap<Element, List<WeavingEncapsulator>>();
 		
 		// Weave all advices
-		for (Advice<?> advice : advices) {
+		for (Advice<?> advice : advices) {			
 			// Get all joinpoints matched by that expression
 			List<MatchResult<? extends Element>> joinpoints = advice.getExpandedPointcutExpression().joinpoints(compilationUnit);
 			
@@ -108,7 +104,7 @@ public abstract class WeaveTransformer {
 		return elementWeaver;
 	}
 
-	protected void setElementWeaver(Weaver elementWeaver) {
+	private void setElementWeaver(Weaver elementWeaver) {
 		this.elementWeaver = elementWeaver;
 	}
 }

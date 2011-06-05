@@ -1,8 +1,6 @@
 package chameleon.aspects.pointcut.expression.staticexpression.cast;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
@@ -37,10 +35,13 @@ public class CastPointcutExpression<E extends CastPointcutExpression<E>> extends
 		
 		return new MatchResult<ClassCastExpression>(this, (ClassCastExpression) joinpoint);
 	}
-
+	
 	@Override
-	public Set<Class<? extends Element>> supportedJoinpoints() {
-		return Collections.<Class<? extends Element>>singleton(ClassCastExpression.class);
+	public boolean isSupported(Class<? extends Element> c) {
+		if (ClassCastExpression.class.isAssignableFrom(c))
+			return true;
+		
+		return false;
 	}
 
 	@Override

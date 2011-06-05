@@ -65,7 +65,7 @@ public interface Weaver<T extends Element, U> {
 	 * 			The join point this advice was matched on
 	 * 	@return The object responsible for transformation
 	 */
-	public AdviceTransformationProvider getTransformationStrategy(Advice advice, MatchResult<T> joinpoint);
+	public AdviceTransformationProvider getTransformationProvider(Advice advice, MatchResult<T> joinpoint);
 	
 	/**
 	 * 	Get the object responsible for tying the weave result and original join point together

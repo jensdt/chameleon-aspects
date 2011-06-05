@@ -22,7 +22,6 @@ import chameleon.core.modifier.Modifier;
 import chameleon.core.namespace.NamespaceElement;
 import chameleon.core.namespace.NamespaceElementImpl;
 import chameleon.core.property.ChameleonProperty;
-import chameleon.core.statement.Block;
 import chameleon.core.validation.BasicProblem;
 import chameleon.core.validation.Valid;
 import chameleon.core.validation.VerificationResult;
@@ -36,20 +35,24 @@ import chameleon.util.Util;
 public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 		implements VariableContainer<E>, ElementWithModifiers<E> {
 
+	public Advice() {
+		
+	}
+	
 	public Advice(TypeReference returnType) {
 		setReturnType(returnType);
 	}
 
 	private OrderedMultiAssociation<Advice<E>, FormalParameter> _parameters = new OrderedMultiAssociation<Advice<E>, FormalParameter>(this);
-	private SingleAssociation<Advice<E>, Block> _body = new SingleAssociation<Advice<E>, Block>(this);
+	private SingleAssociation<Advice<E>, Element> _body = new SingleAssociation<Advice<E>, Element>(this);
 	private SingleAssociation<Advice<E>, PointcutExpression> _pointcutExpression = new SingleAssociation<Advice<E>, PointcutExpression>(this);
 	private SingleAssociation<Advice<E>, TypeReference> _returnType = new SingleAssociation<Advice<E>, TypeReference>(this);
 
-	public Block body() {
+	public Element body() {
 		return _body.getOtherEnd();
 	}
 
-	public void setBody(Block element) {
+	public void setBody(Element element) {
 		setAsParent(_body, element);
 	}
 
@@ -137,7 +140,8 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 		if (returnType() != null)
 			returnTypeClone = returnType().clone();
 
-		Advice clone = new Advice(returnTypeClone);
+		Advice clone = cloneThis();
+		clone.setReturnType(returnTypeClone);
 		clone.setPointcutExpression((PointcutExpression) pointcutExpression().clone());
 		clone.setBody(body().clone());
 
@@ -148,6 +152,10 @@ public class Advice<E extends Advice<E>> extends NamespaceElementImpl<E>
 			clone.addModifier(m.clone());
 
 		return (E) clone;
+	}
+	
+	protected Advice cloneThis() {
+		return new Advice();
 	}
 
 	private List<FormalParameter> unresolvedParameters() {

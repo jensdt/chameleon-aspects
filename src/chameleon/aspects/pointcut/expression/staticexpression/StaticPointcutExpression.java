@@ -1,7 +1,5 @@
 package chameleon.aspects.pointcut.expression.staticexpression;
 
-import java.util.Set;
-
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.element.Element;
@@ -19,13 +17,11 @@ public interface StaticPointcutExpression<E extends StaticPointcutExpression<E>>
 	public MatchResult matches(Element joinpoint) throws LookupException;
 	
 	/**
-	 * 	Get the list of element types that are supported as joinpoints for this PointcutExpression.
+	 * 	Check if a given class is supported. A class
+	 * 	is supported if its supertype is supported
 	 * 
-	 * 	E.g. A joinpoint that matches method invocations has returns {MethodInvocation.class}
-	 * 
-	 * 	@return	The list of supported types as joinpoint
+	 * 	@param c	The class to check
+	 * 	@return	True if the class is supported, false otherwise
 	 */
-	public Set<Class<? extends Element>> supportedJoinpoints();
-	
-	public MatchResult matchesInverse(Element joinpoint) throws LookupException;
+	public boolean isSupported(Class<? extends Element> type);
 }

@@ -104,7 +104,7 @@ public abstract class AbstractElementWeaver<T extends Element, U> implements Wea
 	 */
 	@Override
 	public WeavingEncapsulator<T, U> getWeavingEncapsulator(Advice advice, MatchResult<T> matchResult) throws LookupException {
-		WeavingEncapsulator<T, U> encapsulator = new WeavingEncapsulator<T, U>(getWeavingProvider(advice), getWeaveResultProvider(), getTransformationStrategy(advice, matchResult), advice, matchResult);
+		WeavingEncapsulator<T, U> encapsulator = new WeavingEncapsulator<T, U>(getWeavingProvider(advice), getWeaveResultProvider(), getTransformationProvider(advice, matchResult), advice, matchResult);
 
 		return encapsulator;
 	}

@@ -1,22 +1,19 @@
 package chameleon.aspects.pointcut.expression.namedpointcut;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
-import org.rejuse.predicate.SafePredicate;
 
 import chameleon.aspects.pointcut.Pointcut;
 import chameleon.aspects.pointcut.PointcutReference;
+import chameleon.aspects.pointcut.expression.AbstractPointcutExpression;
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.aspects.pointcut.expression.dynamicexpression.ParameterExposurePointcutExpression;
-import chameleon.aspects.pointcut.expression.staticexpression.AbstractStaticPointcutExpression;
-import chameleon.aspects.pointcut.expression.staticexpression.StaticPointcutExpression;
+import chameleon.core.compilationunit.CompilationUnit;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.element.Element;
 import chameleon.core.expression.Expression;
@@ -27,7 +24,7 @@ import chameleon.core.variable.FormalParameter;
 import chameleon.exception.ChameleonProgrammerException;
 import chameleon.util.Util;
 
-public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> extends AbstractStaticPointcutExpression<E> implements CrossReference<E, Pointcut> {
+public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> extends AbstractPointcutExpression<E> implements CrossReference<E, Pointcut> {
 	
 	private SingleAssociation<NamedPointcutExpression<E>, PointcutReference> _pointcutReference = new SingleAssociation<NamedPointcutExpression<E>, PointcutReference>(this);
 	
@@ -44,19 +41,6 @@ public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> exten
 		return Util.createNonNullList(pointcutReference());
 	}
 
-	@Override
-	public MatchResult matches(Element joinpoint) throws LookupException {
-		if (pointcutReference() == null)
-			return MatchResult.noMatch();
-		
-		PointcutExpression expression = pointcutReference().getElement().expression();
-		
-		if (!(expression instanceof StaticPointcutExpression) || ((StaticPointcutExpression) expression).matches(joinpoint).isMatch() ) {
-			return new MatchResult(this, joinpoint);
-		}
-		
-		return MatchResult.noMatch();
-	}
 
 	@Override
 	public E clone() {
@@ -66,18 +50,6 @@ public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> exten
 			clone.setPointcutReference(pointcutReference().clone());
 		
 		return (E) clone;
-	}
-
-	@Override
-	public Set<Class<? extends Element>> supportedJoinpoints() {
-		if (pointcutReference() == null)
-			return Collections.emptySet();
-		
-		try {
-			return pointcutReference().getElement().expression().supportedJoinpoints();
-		} catch (LookupException e) {
-			return Collections.emptySet();
-		}
 	}
 
 	@Override
@@ -97,36 +69,11 @@ public class NamedPointcutExpression<E extends NamedPointcutExpression<E>> exten
 	}
 
 	/**
-	 * 	{@inheritDoc}
+	 *  {@inheritDoc}
 	 */
 	@Override
-	public PointcutExpression<?> getPrunedTree(SafePredicate<PointcutExpression<?>> filter) {
-		if (pointcutReference() == null)
-			return null;
-		
-		try {
-			return pointcutReference().getElement().expression().getPrunedTree(filter);
-		} catch (LookupException ex) {
-			return null;
-		}
-	}
-
-	/**
-	 * 	{@inheritDoc}
-	 */
-	public PointcutExpression removeFromTree(Class<? extends PointcutExpression> type) {
-		if (pointcutReference() == null)
-			return null;
-		
-		try {
-			return pointcutReference().getElement().expression().removeFromTree(type);
-		} catch (LookupException ex) {
-			return null;
-		}
-	}
-
-	public List<? extends PointcutExpression<?>> asList() {
-		return Collections.<PointcutExpression<?>>singletonList(this);
+	public List<MatchResult> joinpoints(CompilationUnit compilationUnit) throws LookupException {
+		throw new ChameleonProgrammerException("Named pointcut expression not expanded before operations!");
 	}
 	
 	/**

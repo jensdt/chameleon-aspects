@@ -7,7 +7,6 @@ import java.util.List;
 import org.rejuse.association.SingleAssociation;
 
 import chameleon.aspects.Aspect;
-import chameleon.aspects.pointcut.expression.AbstractPointcutExpression;
 import chameleon.aspects.pointcut.expression.PointcutExpression;
 import chameleon.core.declaration.Declaration;
 import chameleon.core.declaration.DeclarationContainer;
@@ -36,7 +35,7 @@ import chameleon.util.Util;
  * 	@author Jens De Temmerman
  *
  */
-public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, Declaration<E, SimpleNameDeclarationWithParametersSignature, Declaration> {
+public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> implements DeclarationContainer<E>, Declaration<E, SimpleNameDeclarationWithParametersSignature> {
 	
 	public Pointcut() {
 		
@@ -162,7 +161,7 @@ public class Pointcut<E extends Pointcut<E>> extends NamespaceElementImpl<E> imp
 	}
 	
 	@Override
-	public Declaration<?, ?, Declaration> selectionDeclaration()
+	public Declaration<?, ?> selectionDeclaration()
 			throws LookupException {
 		return this;
 	}

@@ -2,7 +2,6 @@ package chameleon.aspects.pointcut.expression.generic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.rejuse.association.SingleAssociation;
 
@@ -50,13 +49,8 @@ public abstract class PointcutExpressionSingle<E extends PointcutExpressionSingl
 	}
 	
 	@Override
-	public Set<Class<? extends Element>> supportedJoinpoints() {
-		return expression().supportedJoinpoints();
-	}
-	
-	@Override
-	public List<PointcutExpression> toPostorderList() {
-		List<PointcutExpression> result = new ArrayList<PointcutExpression>();
+	public List<PointcutExpression<?>> toPostorderList() {
+		List<PointcutExpression<?>> result = new ArrayList<PointcutExpression<?>>();
 		
 		result.addAll(expression().toPostorderList());
 		result.add(this);

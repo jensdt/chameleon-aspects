@@ -2,7 +2,6 @@ package chameleon.aspects.pointcut.expression.staticexpression.catchclause;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import chameleon.aspects.pointcut.expression.MatchResult;
 import chameleon.core.element.Element;
@@ -37,11 +36,5 @@ public class EmptyCatchClausePointcutExpression<E extends EmptyCatchClausePointc
 	@Override
 	public E clone() {
 		return (E) new EmptyCatchClausePointcutExpression<E>();
-	}
-
-	@Override
-	public MatchResult matchesInverse(Element joinpoint) throws LookupException {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
 	}
 }

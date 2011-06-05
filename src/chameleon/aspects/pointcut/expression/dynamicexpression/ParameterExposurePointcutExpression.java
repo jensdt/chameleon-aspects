@@ -15,7 +15,21 @@ public interface ParameterExposurePointcutExpression<E extends ParameterExposure
 	 */
 	public int indexOfParameter(FormalParameter fp);
 	
-	public ParameterExposurePointcutExpression<?> findExpressionFor(FormalParameter fp);
+	/**
+	 * 	Find the expression that exposes the given parameter
+	 * 
+	 * 	@param 	formalParemeter
+	 * 			The parameter to look for
+	 * 	
+	 * 	@return	The expression that exposes the given parameter
+	 */
+	public ParameterExposurePointcutExpression<?> findExpressionFor(FormalParameter formalParameter);
 	
+	/**
+	 * 	Rename the parameters this expression exposes according to the given map
+	 * 
+	 * 	@param 	parameterNamesMap
+	 * 			The map to rename the parameters (keys = from, corresponding values = to)
+	 */
 	public void renameParameters(Map<String, String> parameterNamesMap);
 }

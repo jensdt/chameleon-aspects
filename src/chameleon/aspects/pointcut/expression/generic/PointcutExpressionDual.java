@@ -69,17 +69,9 @@ public abstract class PointcutExpressionDual<E extends PointcutExpressionDual<E>
 		return result;
 	}
 	
-	public List<? extends PointcutExpression<?>> asList() {
-		List<PointcutExpression<?>> result = new ArrayList<PointcutExpression<?>>();
-		result.addAll(expression1().asList());
-		result.addAll(expression2().asList());
-		
-		return result;
-	}
-	
 	@Override
-	public List<PointcutExpression> toPostorderList() {
-		List<PointcutExpression> result = new ArrayList<PointcutExpression>();
+	public List<PointcutExpression<?>> toPostorderList() {
+		List<PointcutExpression<?>> result = new ArrayList<PointcutExpression<?>>();
 		
 		result.addAll(expression1().toPostorderList());
 		result.addAll(expression2().toPostorderList());
